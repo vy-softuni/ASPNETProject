@@ -1,0 +1,160 @@
+:root {
+    --bg: #f4f7f5;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --border: #dbe2ea;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.container {
+    width: min(1100px, calc(100% - 2rem));
+    margin: 0 auto;
+}
+
+.site-header,
+.site-footer {
+    background: #0f172a;
+    color: #fff;
+}
+
+.nav-wrap {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.brand {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.main-nav,
+.auth-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.main-nav a,
+.auth-links a,
+.site-footer a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.page-content {
+    padding: 2rem 0 3rem;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.hero-card,
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.eyebrow {
+    color: var(--primary-dark);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.btn,
+.link-button {
+    display: inline-block;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.inline-form {
+    display: inline;
+}
+
+.link-button {
+    background: transparent;
+    color: #fff;
+    border: none;
+    padding: 0;
+}
+
+.site-footer {
+    padding: 1rem 0;
+}
+
+code {
+    background: #eef2ff;
+    border-radius: 6px;
+    padding: 0.15rem 0.4rem;
+}
+
+@media (max-width: 900px) {
+    .hero,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Identity
+@using RepairCircle.Data.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="auth-links">
+@if (SignInManager.IsSignedIn(User))
+{
+    <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello, @User.Identity?.Name</a>
+    <form class="inline-form" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+        <button type="submit" class="link-button">Logout</button>
+    </form>
+}
+else
+{
+    <a asp-area="Identity" asp-page="/Account/Register">Register</a>
+    <a asp-area="Identity" asp-page="/Account/Login">Login</a>
+}
+</div>

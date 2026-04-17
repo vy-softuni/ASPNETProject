@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="hero">
+    <div>
+        <span class="eyebrow">Community repair and tool sharing</span>
+        <h1>Welcome to RepairCircle</h1>
+        <p>RepairCircle helps communities fix broken items, borrow tools, and connect with volunteers who can help.</p>
+        <div class="actions">
+            <a class="btn btn-primary" asp-controller="RepairRequests" asp-action="Create">Submit a Repair Request</a>
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse Tools</a>
+        </div>
+    </div>
+    <div class="hero-card">
+        <h2>Starter project status</h2>
+        <ul>
+            <li>Step 1: MVC project created</li>
+            <li>Step 2: Identity and SQL Server configured</li>
+            <li>Step 3: Core entity models added</li>
+        </ul>
+    </div>
+</section>
+
+<section class="grid grid-3">
+    <article class="card">
+        <h3>Borrow Tools</h3>
+        <p>Find useful tools in your local repair network.</p>
+    </article>
+    <article class="card">
+        <h3>Request Repairs</h3>
+        <p>Submit repair requests for electronics, bikes, sewing, and more.</p>
+    </article>
+    <article class="card">
+        <h3>Join as a Volunteer</h3>
+        <p>Share your skills and help reduce waste in your community.</p>
+    </article>
+</section>

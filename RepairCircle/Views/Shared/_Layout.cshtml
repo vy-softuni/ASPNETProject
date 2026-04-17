@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RepairCircle</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a class="brand" asp-controller="Home" asp-action="Index">RepairCircle</a>
+            <nav class="main-nav">
+                <a asp-controller="Home" asp-action="About">About</a>
+                <a asp-controller="Tools" asp-action="Index">Tools</a>
+                <a asp-controller="RepairRequests" asp-action="Index">Repairs</a>
+                <a asp-controller="RepairSessions" asp-action="Index">Sessions</a>
+                <a asp-controller="Volunteers" asp-action="Index">Volunteers</a>
+                <a asp-controller="Home" asp-action="Contact">Contact</a>
+            </nav>
+            <partial name="_LoginPartial" />
+        </div>
+    </header>
+
+    <main class="container page-content">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; @DateTime.UtcNow.Year - RepairCircle</p>
+        </div>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
