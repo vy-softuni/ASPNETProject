@@ -20,7 +20,7 @@ public class RepairRequestsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, string? status, int? locationId, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
@@ -31,7 +31,31 @@ public class RepairRequestsController : Controller
             .Include(r => r.AssignedVolunteerProfile)
                 .ThenInclude(v => v!.User)
             .Include(r => r.Location)
-            .Include(r => r.RepairSession);
+            .Include(r => r.RepairSession)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(r =>
+                r.Title.ToLower().Contains(normalizedSearchTerm) ||
+                r.ItemType.ToLower().Contains(normalizedSearchTerm) ||
+                r.SubmittedByUser.Email!.ToLower().Contains(normalizedSearchTerm) ||
+                (r.SubmittedByUser.FullName != null && r.SubmittedByUser.FullName.ToLower().Contains(normalizedSearchTerm)) ||
+                r.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
+                r.Location.City.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status) &&
+            Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
+        {
+            query = query.Where(r => r.Status == parsedStatus);
+        }
+
+        if (locationId.HasValue)
+        {
+            query = query.Where(r => r.LocationId == locationId.Value);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -49,6 +73,18 @@ public class RepairRequestsController : Controller
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.LocationId = locationId;
+        ViewBag.FilterStatuses = new SelectList(
+            Enum.GetNames<RepairRequestStatus>().Select(s => new { Id = s, Name = s }),
+            "Id",
+            "Name",
+            status);
+        ViewBag.FilterLocations = new SelectList(
+            await dbContext.Locations.AsNoTracking().OrderBy(l => l.Name).Select(l => new { l.Id, Name = $"{l.Name} ({l.City})" }).ToListAsync(),
+            "Id",
+            "Name",
+            locationId);
 
         return View(requests);
     }

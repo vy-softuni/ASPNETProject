@@ -16,7 +16,12 @@ public class FavoriteService : IFavoriteService
         this.dbContext = dbContext;
     }
 
-    public async Task<PagedCollectionViewModel<FavoriteListItemViewModel>> GetUserFavoritesAsync(string userId, int page = 1, int pageSize = 6)
+    public async Task<FavoriteIndexViewModel> GetUserFavoritesAsync(
+        string userId,
+        string? searchTerm = null,
+        bool? onlyAvailable = null,
+        int page = 1,
+        int pageSize = 6)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
@@ -27,7 +32,23 @@ public class FavoriteService : IFavoriteService
                 .ThenInclude(t => t.ToolCategory)
             .Include(f => f.Tool)
                 .ThenInclude(t => t.Location)
-            .Where(f => f.UserId == userId);
+            .Where(f => f.UserId == userId)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(f =>
+                f.Tool.Name.ToLower().Contains(normalizedSearchTerm) ||
+                f.Tool.ToolCategory.Name.ToLower().Contains(normalizedSearchTerm) ||
+                f.Tool.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
+                f.Tool.Location.City.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (onlyAvailable == true)
+        {
+            query = query.Where(f => f.Tool.IsAvailable && f.Tool.Quantity > 0);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -48,8 +69,10 @@ public class FavoriteService : IFavoriteService
             })
             .ToListAsync();
 
-        return new PagedCollectionViewModel<FavoriteListItemViewModel>
+        return new FavoriteIndexViewModel
         {
+            SearchTerm = searchTerm,
+            OnlyAvailable = onlyAvailable,
             Items = favorites,
             Pagination = new PaginationViewModel
             {

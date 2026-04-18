@@ -16,7 +16,7 @@ public class BorrowRecordsController : Controller
         this.borrowRecordService = borrowRecordService;
     }
 
-    public async Task<IActionResult> MyRecords(int page = 1)
+    public async Task<IActionResult> MyRecords(string? searchTerm, string? status, int page = 1)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -24,7 +24,7 @@ public class BorrowRecordsController : Controller
             return Challenge();
         }
 
-        var model = await borrowRecordService.GetUserRecordsAsync(userId, page);
+        var model = await borrowRecordService.GetUserRecordsAsync(userId, searchTerm, status, page);
         return View(model);
     }
 

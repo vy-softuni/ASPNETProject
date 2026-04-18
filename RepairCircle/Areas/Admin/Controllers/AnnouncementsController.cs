@@ -18,12 +18,30 @@ public class AnnouncementsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, bool? onlyImportant, bool? onlyPublished, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
 
-        var query = dbContext.Announcements.AsNoTracking();
+        var query = dbContext.Announcements.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(a =>
+                a.Title.ToLower().Contains(normalizedSearchTerm) ||
+                a.Content.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (onlyImportant == true)
+        {
+            query = query.Where(a => a.IsImportant);
+        }
+
+        if (onlyPublished == true)
+        {
+            query = query.Where(a => a.IsPublished);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -41,6 +59,9 @@ public class AnnouncementsController : Controller
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.OnlyImportant = onlyImportant;
+        ViewBag.OnlyPublished = onlyPublished;
 
         return View(announcements);
     }

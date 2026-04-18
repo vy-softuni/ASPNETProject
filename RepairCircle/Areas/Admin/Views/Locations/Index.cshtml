@@ -10,6 +10,22 @@
         </div>
         <a class="btn btn-primary" asp-action="Create">Create location</a>
     </div>
+
+    <form method="get" class="form-grid filter-grid admin-filter-form">
+        <div class="form-field">
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Workshop name, address..." />
+        </div>
+        <div class="form-field">
+            <label for="city">City</label>
+            <input id="city" name="city" value="@ViewBag.City" placeholder="Sofia" />
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+        </div>
+    </form>
+
     <table>
         <thead>
             <tr><th>Name</th><th>City</th><th>Address</th><th>Coordinates</th><th></th></tr>

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
+using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
 using RepairCircle.Services.Interfaces;
 using RepairCircle.ViewModels.Common;
@@ -16,14 +17,31 @@ public class RepairRequestService : IRepairRequestService
         this.dbContext = dbContext;
     }
 
-    public async Task<RepairRequestIndexViewModel> GetAllAsync(int page = 1, int pageSize = 6)
+    public async Task<RepairRequestIndexViewModel> GetAllAsync(
+        string? searchTerm = null,
+        string? status = null,
+        int? locationId = null,
+        int page = 1,
+        int pageSize = 6)
     {
-        return await GetPagedAsync(BuildRequestListQuery(), page, pageSize);
+        return await GetPagedAsync(BuildRequestListQuery(), searchTerm, status, locationId, page, pageSize);
     }
 
-    public async Task<RepairRequestIndexViewModel> GetMineAsync(string userId, int page = 1, int pageSize = 6)
+    public async Task<RepairRequestIndexViewModel> GetMineAsync(
+        string userId,
+        string? searchTerm = null,
+        string? status = null,
+        int? locationId = null,
+        int page = 1,
+        int pageSize = 6)
     {
-        return await GetPagedAsync(BuildRequestListQuery().Where(r => r.SubmittedByUserId == userId), page, pageSize);
+        return await GetPagedAsync(
+            BuildRequestListQuery().Where(r => r.SubmittedByUserId == userId),
+            searchTerm,
+            status,
+            locationId,
+            page,
+            pageSize);
     }
 
     public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id)
@@ -134,10 +152,39 @@ public class RepairRequestService : IRepairRequestService
         return repairRequest.Id;
     }
 
-    private async Task<RepairRequestIndexViewModel> GetPagedAsync(IQueryable<RepairRequestListProjection> query, int page, int pageSize)
+    private async Task<RepairRequestIndexViewModel> GetPagedAsync(
+        IQueryable<RepairRequestListProjection> query,
+        string? searchTerm,
+        string? status,
+        int? locationId,
+        int page,
+        int pageSize)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(r =>
+                r.Title.ToLower().Contains(normalizedSearchTerm) ||
+                r.ItemType.ToLower().Contains(normalizedSearchTerm) ||
+                r.LocationName.ToLower().Contains(normalizedSearchTerm) ||
+                r.SubmittedBy.ToLower().Contains(normalizedSearchTerm) ||
+                (r.AssignedVolunteer != null && r.AssignedVolunteer.ToLower().Contains(normalizedSearchTerm)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status) &&
+            Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
+        {
+            var parsedStatusName = parsedStatus.ToString();
+            query = query.Where(r => r.Status == parsedStatusName);
+        }
+
+        if (locationId.HasValue)
+        {
+            query = query.Where(r => r.LocationId == locationId.Value);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -149,8 +196,23 @@ public class RepairRequestService : IRepairRequestService
             .Take(pageSize)
             .ToListAsync();
 
+        var locations = await dbContext.Locations
+            .AsNoTracking()
+            .OrderBy(l => l.Name)
+            .Select(l => new LookupViewModel
+            {
+                Id = l.Id,
+                Name = $"{l.Name} ({l.City})"
+            })
+            .ToListAsync();
+
         return new RepairRequestIndexViewModel
         {
+            SearchTerm = searchTerm,
+            Status = status,
+            LocationId = locationId,
+            Locations = locations,
+            Statuses = Enum.GetNames<RepairRequestStatus>(),
             Requests = requests,
             Pagination = new PaginationViewModel
             {
@@ -180,6 +242,7 @@ public class RepairRequestService : IRepairRequestService
                 AssignedVolunteer = r.AssignedVolunteerProfile != null
                     ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
                     : null,
+                LocationId = r.LocationId,
                 LocationName = $"{r.Location.Name} ({r.Location.City})",
                 RequestedDate = r.RequestedDate
             });
@@ -188,5 +251,6 @@ public class RepairRequestService : IRepairRequestService
     private sealed class RepairRequestListProjection : RepairRequestListItemViewModel
     {
         public string SubmittedByUserId { get; set; } = string.Empty;
+        public int LocationId { get; set; }
     }
 }

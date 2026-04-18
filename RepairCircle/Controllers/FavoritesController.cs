@@ -15,7 +15,7 @@ public class FavoritesController : Controller
         this.favoriteService = favoriteService;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, bool? onlyAvailable, int page = 1)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -23,7 +23,7 @@ public class FavoritesController : Controller
             return Challenge();
         }
 
-        var model = await favoriteService.GetUserFavoritesAsync(userId, page);
+        var model = await favoriteService.GetUserFavoritesAsync(userId, searchTerm, onlyAvailable, page);
         return View(model);
     }
 

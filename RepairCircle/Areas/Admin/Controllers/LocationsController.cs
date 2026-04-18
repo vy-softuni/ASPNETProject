@@ -18,12 +18,27 @@ public class LocationsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, string? city, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
 
-        var query = dbContext.Locations.AsNoTracking();
+        var query = dbContext.Locations.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(l =>
+                l.Name.ToLower().Contains(normalizedSearchTerm) ||
+                l.Address.ToLower().Contains(normalizedSearchTerm) ||
+                (l.Description != null && l.Description.ToLower().Contains(normalizedSearchTerm)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            var normalizedCity = city.Trim().ToLower();
+            query = query.Where(l => l.City.ToLower().Contains(normalizedCity));
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -42,6 +57,8 @@ public class LocationsController : Controller
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.City = city;
 
         return View(locations);
     }

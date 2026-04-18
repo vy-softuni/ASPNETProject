@@ -12,9 +12,9 @@ public class ToolsController : Controller
         this.toolService = toolService;
     }
 
-    public async Task<IActionResult> Index(string? searchTerm, int? categoryId, int? locationId, bool? onlyAvailable, int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, int? categoryId, int? locationId, string? condition, bool? onlyAvailable, int page = 1)
     {
-        var model = await toolService.GetAllAsync(searchTerm, categoryId, locationId, onlyAvailable, page);
+        var model = await toolService.GetAllAsync(searchTerm, categoryId, locationId, condition, onlyAvailable, page);
         return View(model);
     }
 

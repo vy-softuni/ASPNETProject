@@ -9,6 +9,29 @@
     <p>These sessions bring together volunteers and community members to fix common household and workshop items.</p>
 </section>
 
+<section class="card filter-card">
+    <form method="get" class="form-grid filter-grid">
+        <div class="form-field">
+            <label asp-for="SearchTerm">Search</label>
+            <input asp-for="SearchTerm" placeholder="Electronics, sewing, Sofia..." />
+        </div>
+        <div class="form-field">
+            <label asp-for="LocationId">Location</label>
+            <select asp-for="LocationId">
+                <option value="">All locations</option>
+                @foreach (var location in Model.Locations)
+                {
+                    <option value="@location.Id">@location.Name</option>
+                }
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+        </div>
+    </form>
+</section>
+
 @if (!Model.Sessions.Any())
 {
     <section class="empty-state">

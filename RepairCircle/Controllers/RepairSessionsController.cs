@@ -12,9 +12,9 @@ public class RepairSessionsController : Controller
         this.repairSessionService = repairSessionService;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, int? locationId, int page = 1)
     {
-        var model = await repairSessionService.GetAllUpcomingAsync(page);
+        var model = await repairSessionService.GetAllUpcomingAsync(searchTerm, locationId, page);
         return View(model);
     }
 

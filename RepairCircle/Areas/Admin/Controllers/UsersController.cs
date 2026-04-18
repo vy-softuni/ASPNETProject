@@ -19,25 +19,18 @@ public class UsersController : Controller
         this.userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, string? role, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
 
-        var query = userManager.Users.AsNoTracking();
-
-        var totalItems = await query.CountAsync();
-        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
-        page = Math.Min(page, totalPages);
-
-        var users = await query
+        var allUsers = await userManager.Users
+            .AsNoTracking()
             .OrderBy(u => u.Email)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
             .ToListAsync();
 
         var model = new List<AdminUserListItemViewModel>();
-        foreach (var user in users)
+        foreach (var user in allUsers)
         {
             var roles = await userManager.GetRolesAsync(user);
             model.Add(new AdminUserListItemViewModel
@@ -51,13 +44,41 @@ public class UsersController : Controller
             });
         }
 
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            model = model.Where(u =>
+                    (!string.IsNullOrWhiteSpace(u.FullName) && u.FullName.ToLower().Contains(normalizedSearchTerm)) ||
+                    (!string.IsNullOrWhiteSpace(u.UserName) && u.UserName.ToLower().Contains(normalizedSearchTerm)) ||
+                    u.Email.ToLower().Contains(normalizedSearchTerm))
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            model = model.Where(u => u.Roles.Any(r => string.Equals(r, role, StringComparison.OrdinalIgnoreCase))).ToList();
+        }
+
+        var totalItems = model.Count;
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var pagedUsers = model
+            .OrderBy(u => u.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
         ViewBag.Pagination = new PaginationViewModel
         {
             CurrentPage = page,
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.Role = role;
+        ViewBag.Roles = new[] { "Administrator", "Volunteer", "User" };
 
-        return View(model);
+        return View(pagedUsers);
     }
 }

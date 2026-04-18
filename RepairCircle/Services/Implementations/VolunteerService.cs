@@ -17,7 +17,12 @@ public class VolunteerService : IVolunteerService
         this.dbContext = dbContext;
     }
 
-    public async Task<PagedCollectionViewModel<VolunteerListItemViewModel>> GetApprovedAsync(int page = 1, int pageSize = 6)
+    public async Task<VolunteerIndexViewModel> GetApprovedAsync(
+        string? searchTerm = null,
+        int? skillId = null,
+        string? experienceLevel = null,
+        int page = 1,
+        int pageSize = 6)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
@@ -26,7 +31,30 @@ public class VolunteerService : IVolunteerService
             .AsNoTracking()
             .Include(v => v.User)
             .Include(v => v.Skills)
-            .Where(v => v.IsApproved);
+            .Where(v => v.IsApproved)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(v =>
+                (v.User.FullName != null && v.User.FullName.ToLower().Contains(normalizedSearchTerm)) ||
+                (v.User.UserName != null && v.User.UserName.ToLower().Contains(normalizedSearchTerm)) ||
+                (v.User.Email != null && v.User.Email.ToLower().Contains(normalizedSearchTerm)) ||
+                (v.Bio != null && v.Bio.ToLower().Contains(normalizedSearchTerm)) ||
+                v.Skills.Any(s => s.Name.ToLower().Contains(normalizedSearchTerm)));
+        }
+
+        if (skillId.HasValue)
+        {
+            query = query.Where(v => v.Skills.Any(s => s.Id == skillId.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(experienceLevel) &&
+            Enum.TryParse<ExperienceLevel>(experienceLevel, out var parsedExperienceLevel))
+        {
+            query = query.Where(v => v.ExperienceLevel == parsedExperienceLevel);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -46,9 +74,24 @@ public class VolunteerService : IVolunteerService
             })
             .ToListAsync();
 
-        return new PagedCollectionViewModel<VolunteerListItemViewModel>
+        var skills = await dbContext.Skills
+            .AsNoTracking()
+            .OrderBy(s => s.Name)
+            .Select(s => new LookupViewModel
+            {
+                Id = s.Id,
+                Name = s.Name
+            })
+            .ToListAsync();
+
+        return new VolunteerIndexViewModel
         {
-            Items = volunteers,
+            SearchTerm = searchTerm,
+            SkillId = skillId,
+            ExperienceLevel = experienceLevel,
+            Skills = skills,
+            ExperienceLevels = Enum.GetNames<ExperienceLevel>(),
+            Volunteers = volunteers,
             Pagination = new PaginationViewModel
             {
                 CurrentPage = page,

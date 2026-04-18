@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
+using RepairCircle.Data.Enums;
 using RepairCircle.Services.Interfaces;
 using RepairCircle.ViewModels.Common;
 using RepairCircle.ViewModels.Tools;
@@ -15,7 +16,14 @@ public class ToolService : IToolService
         this.dbContext = dbContext;
     }
 
-    public async Task<ToolIndexViewModel> GetAllAsync(string? searchTerm = null, int? categoryId = null, int? locationId = null, bool? onlyAvailable = null, int page = 1, int pageSize = 9)
+    public async Task<ToolIndexViewModel> GetAllAsync(
+        string? searchTerm = null,
+        int? categoryId = null,
+        int? locationId = null,
+        string? condition = null,
+        bool? onlyAvailable = null,
+        int page = 1,
+        int pageSize = 9)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 9 : pageSize;
@@ -31,7 +39,9 @@ public class ToolService : IToolService
             var normalizedSearchTerm = searchTerm.Trim().ToLower();
             toolsQuery = toolsQuery.Where(t =>
                 t.Name.ToLower().Contains(normalizedSearchTerm) ||
-                t.Description.ToLower().Contains(normalizedSearchTerm));
+                t.Description.ToLower().Contains(normalizedSearchTerm) ||
+                t.Location.City.ToLower().Contains(normalizedSearchTerm) ||
+                t.ToolCategory.Name.ToLower().Contains(normalizedSearchTerm));
         }
 
         if (categoryId.HasValue)
@@ -44,6 +54,12 @@ public class ToolService : IToolService
             toolsQuery = toolsQuery.Where(t => t.LocationId == locationId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(condition) &&
+            Enum.TryParse<ToolCondition>(condition, out var parsedCondition))
+        {
+            toolsQuery = toolsQuery.Where(t => t.Condition == parsedCondition);
+        }
+
         if (onlyAvailable == true)
         {
             toolsQuery = toolsQuery.Where(t => t.IsAvailable && t.Quantity > 0);
@@ -54,7 +70,7 @@ public class ToolService : IToolService
         page = Math.Min(page, totalPages);
 
         var tools = await toolsQuery
-            .OrderByDescending(t => t.IsAvailable)
+            .OrderByDescending(t => t.IsAvailable && t.Quantity > 0)
             .ThenBy(t => t.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -98,9 +114,11 @@ public class ToolService : IToolService
             SearchTerm = searchTerm,
             CategoryId = categoryId,
             LocationId = locationId,
+            Condition = condition,
             OnlyAvailable = onlyAvailable,
             Categories = categories,
             Locations = locations,
+            Conditions = Enum.GetNames<ToolCondition>(),
             Tools = tools,
             Pagination = new PaginationViewModel
             {

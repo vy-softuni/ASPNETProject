@@ -1,4 +1,4 @@
-@model PagedCollectionViewModel<FavoriteListItemViewModel>
+@model FavoriteIndexViewModel
 @{
     ViewData["Title"] = "My Favorite Tools";
 }
@@ -7,6 +7,25 @@
     <span class="eyebrow">Saved items</span>
     <h1>My favorite tools</h1>
     <p>Keep a shortlist of useful tools you may want to borrow later.</p>
+</section>
+
+<section class="card filter-card">
+    <form method="get" class="form-grid filter-grid">
+        <div class="form-field">
+            <label asp-for="SearchTerm">Search</label>
+            <input asp-for="SearchTerm" placeholder="Drill, sewing, Sofia..." />
+        </div>
+        <div class="form-field checkbox-field">
+            <label class="checkbox-label">
+                <input asp-for="OnlyAvailable" type="checkbox" value="true" />
+                Show only currently available tools
+            </label>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+        </div>
+    </form>
 </section>
 
 @if (!Model.Items.Any())

@@ -1,4 +1,4 @@
-@model PagedCollectionViewModel<BorrowRecordListItemViewModel>
+@model BorrowRecordIndexViewModel
 @{
     ViewData["Title"] = "My Borrow Records";
 }
@@ -7,6 +7,29 @@
     <span class="eyebrow">Personal history</span>
     <h1>My borrow records</h1>
     <p>Track active, approved, and returned tool requests from one place.</p>
+</section>
+
+<section class="card filter-card">
+    <form method="get" class="form-grid filter-grid">
+        <div class="form-field">
+            <label asp-for="SearchTerm">Search</label>
+            <input asp-for="SearchTerm" placeholder="Tool name, BOR- reference, location..." />
+        </div>
+        <div class="form-field">
+            <label asp-for="Status">Status</label>
+            <select asp-for="Status">
+                <option value="">All statuses</option>
+                @foreach (var status in Model.Statuses)
+                {
+                    <option value="@status">@status</option>
+                }
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="MyRecords">Clear</a>
+        </div>
+    </form>
 </section>
 
 @if (!Model.Items.Any())

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
+using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
 using RepairCircle.ViewModels.Common;
 
@@ -19,7 +20,7 @@ public class ToolsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, int? categoryId, int? locationId, bool? onlyAvailable, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
@@ -27,7 +28,34 @@ public class ToolsController : Controller
         var query = dbContext.Tools
             .AsNoTracking()
             .Include(t => t.ToolCategory)
-            .Include(t => t.Location);
+            .Include(t => t.Location)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(t =>
+                t.Name.ToLower().Contains(normalizedSearchTerm) ||
+                t.Description.ToLower().Contains(normalizedSearchTerm) ||
+                t.ToolCategory.Name.ToLower().Contains(normalizedSearchTerm) ||
+                t.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
+                t.Location.City.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(t => t.ToolCategoryId == categoryId.Value);
+        }
+
+        if (locationId.HasValue)
+        {
+            query = query.Where(t => t.LocationId == locationId.Value);
+        }
+
+        if (onlyAvailable == true)
+        {
+            query = query.Where(t => t.IsAvailable && t.Quantity > 0);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -45,6 +73,11 @@ public class ToolsController : Controller
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.CategoryId = categoryId;
+        ViewBag.LocationId = locationId;
+        ViewBag.OnlyAvailable = onlyAvailable;
+        await PopulateLookupsAsync(categoryId, locationId);
 
         return View(tools);
     }

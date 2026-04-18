@@ -875,3 +875,17 @@ th {
     pointer-events: none;
     opacity: 0.55;
 }
+
+
+.admin-filter-form {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}

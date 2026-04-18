@@ -6,7 +6,7 @@
 <section class="page-header card">
     <span class="eyebrow">Tool inventory</span>
     <h1>Browse available tools</h1>
-    <p>Search by name and narrow the results by category, location, and availability.</p>
+    <p>Search by name and narrow the results by category, location, condition, and availability.</p>
 </section>
 
 <section class="card filter-card">
@@ -32,6 +32,16 @@
                 @foreach (var location in Model.Locations)
                 {
                     <option value="@location.Id">@location.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-field">
+            <label asp-for="Condition">Condition</label>
+            <select asp-for="Condition">
+                <option value="">All conditions</option>
+                @foreach (var condition in Model.Conditions)
+                {
+                    <option value="@condition">@condition</option>
                 }
             </select>
         </div>

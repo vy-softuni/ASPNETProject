@@ -1,4 +1,4 @@
-@model PagedCollectionViewModel<VolunteerListItemViewModel>
+@model VolunteerIndexViewModel
 @{
     ViewData["Title"] = "Volunteers";
 }
@@ -9,7 +9,40 @@
     <p>These volunteers have been approved to help with repair requests and workshop sessions.</p>
 </section>
 
-@if (!Model.Items.Any())
+<section class="card filter-card">
+    <form method="get" class="form-grid filter-grid">
+        <div class="form-field">
+            <label asp-for="SearchTerm">Search</label>
+            <input asp-for="SearchTerm" placeholder="Name, bio, electronics, sewing..." />
+        </div>
+        <div class="form-field">
+            <label asp-for="SkillId">Skill</label>
+            <select asp-for="SkillId">
+                <option value="">All skills</option>
+                @foreach (var skill in Model.Skills)
+                {
+                    <option value="@skill.Id">@skill.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-field">
+            <label asp-for="ExperienceLevel">Experience</label>
+            <select asp-for="ExperienceLevel">
+                <option value="">All levels</option>
+                @foreach (var level in Model.ExperienceLevels)
+                {
+                    <option value="@level">@level</option>
+                }
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+        </div>
+    </form>
+</section>
+
+@if (!Model.Volunteers.Any())
 {
     <section class="empty-state">
         <h2>No volunteers listed yet</h2>
@@ -19,7 +52,7 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var volunteer in Model.Items)
+        @foreach (var volunteer in Model.Volunteers)
         {
             <article class="card item-card">
                 <div class="item-card-topline">

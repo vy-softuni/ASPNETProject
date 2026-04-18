@@ -19,14 +19,35 @@ public class RepairSessionsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, int? locationId, bool? onlyUpcoming, int page = 1)
     {
         const int pageSize = 10;
         page = page < 1 ? 1 : page;
 
         var query = dbContext.RepairSessions
             .AsNoTracking()
-            .Include(rs => rs.Location);
+            .Include(rs => rs.Location)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(rs =>
+                rs.Title.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Description.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Location.City.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (locationId.HasValue)
+        {
+            query = query.Where(rs => rs.LocationId == locationId.Value);
+        }
+
+        if (onlyUpcoming == true)
+        {
+            query = query.Where(rs => rs.EndDate >= DateTime.UtcNow);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -44,6 +65,10 @@ public class RepairSessionsController : Controller
             PageSize = pageSize,
             TotalItems = totalItems
         };
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.LocationId = locationId;
+        ViewBag.OnlyUpcoming = onlyUpcoming;
+        await PopulateLocationsAsync(locationId);
 
         return View(sessions);
     }

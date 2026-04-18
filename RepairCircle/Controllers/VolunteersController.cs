@@ -15,9 +15,9 @@ public class VolunteersController : Controller
         this.volunteerService = volunteerService;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, int? skillId, string? experienceLevel, int page = 1)
     {
-        var model = await volunteerService.GetApprovedAsync(page);
+        var model = await volunteerService.GetApprovedAsync(searchTerm, skillId, experienceLevel, page);
         return View(model);
     }
 

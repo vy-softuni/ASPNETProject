@@ -17,7 +17,12 @@ public class BorrowRecordService : IBorrowRecordService
         this.dbContext = dbContext;
     }
 
-    public async Task<PagedCollectionViewModel<BorrowRecordListItemViewModel>> GetUserRecordsAsync(string userId, int page = 1, int pageSize = 10)
+    public async Task<BorrowRecordIndexViewModel> GetUserRecordsAsync(
+        string userId,
+        string? searchTerm = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 10)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 10 : pageSize;
@@ -26,7 +31,23 @@ public class BorrowRecordService : IBorrowRecordService
             .AsNoTracking()
             .Include(br => br.Tool)
                 .ThenInclude(t => t.Location)
-            .Where(br => br.UserId == userId);
+            .Where(br => br.UserId == userId)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(br =>
+                br.Tool.Name.ToLower().Contains(normalizedSearchTerm) ||
+                br.BorrowReference.ToLower().Contains(normalizedSearchTerm) ||
+                br.Tool.Location.Name.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status) &&
+            Enum.TryParse<BorrowStatus>(status, out var parsedStatus))
+        {
+            query = query.Where(br => br.Status == parsedStatus);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -49,8 +70,11 @@ public class BorrowRecordService : IBorrowRecordService
             })
             .ToListAsync();
 
-        return new PagedCollectionViewModel<BorrowRecordListItemViewModel>
+        return new BorrowRecordIndexViewModel
         {
+            SearchTerm = searchTerm,
+            Status = status,
+            Statuses = Enum.GetNames<BorrowStatus>(),
             Items = records,
             Pagination = new PaginationViewModel
             {

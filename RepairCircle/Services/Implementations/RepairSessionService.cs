@@ -15,7 +15,11 @@ public class RepairSessionService : IRepairSessionService
         this.dbContext = dbContext;
     }
 
-    public async Task<RepairSessionIndexViewModel> GetAllUpcomingAsync(int page = 1, int pageSize = 6)
+    public async Task<RepairSessionIndexViewModel> GetAllUpcomingAsync(
+        string? searchTerm = null,
+        int? locationId = null,
+        int page = 1,
+        int pageSize = 6)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
@@ -23,7 +27,23 @@ public class RepairSessionService : IRepairSessionService
         var query = dbContext.RepairSessions
             .AsNoTracking()
             .Include(rs => rs.Location)
-            .Where(rs => rs.EndDate >= DateTime.UtcNow);
+            .Where(rs => rs.EndDate >= DateTime.UtcNow)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            query = query.Where(rs =>
+                rs.Title.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Description.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
+                rs.Location.City.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if (locationId.HasValue)
+        {
+            query = query.Where(rs => rs.LocationId == locationId.Value);
+        }
 
         var totalItems = await query.CountAsync();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
@@ -47,8 +67,21 @@ public class RepairSessionService : IRepairSessionService
             })
             .ToListAsync();
 
+        var locations = await dbContext.Locations
+            .AsNoTracking()
+            .OrderBy(l => l.Name)
+            .Select(l => new LookupViewModel
+            {
+                Id = l.Id,
+                Name = $"{l.Name} ({l.City})"
+            })
+            .ToListAsync();
+
         return new RepairSessionIndexViewModel
         {
+            SearchTerm = searchTerm,
+            LocationId = locationId,
+            Locations = locations,
             Sessions = sessions,
             Pagination = new PaginationViewModel
             {

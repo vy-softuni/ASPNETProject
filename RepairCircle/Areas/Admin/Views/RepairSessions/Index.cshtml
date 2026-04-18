@@ -10,6 +10,30 @@
         </div>
         <a class="btn btn-primary" asp-action="Create">Create session</a>
     </div>
+
+    <form method="get" class="form-grid filter-grid admin-filter-form">
+        <div class="form-field">
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Session title, workshop..." />
+        </div>
+        <div class="form-field">
+            <label for="locationId">Location</label>
+            <select id="locationId" name="locationId" asp-items="ViewBag.Locations">
+                <option value="">All locations</option>
+            </select>
+        </div>
+        <div class="form-field checkbox-field">
+            <label class="checkbox-label">
+                <input type="checkbox" name="onlyUpcoming" value="true" @((ViewBag.OnlyUpcoming == true) ? "checked" : null) />
+                Only upcoming
+            </label>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+        </div>
+    </form>
+
     <table>
         <thead>
             <tr><th>Title</th><th>Start</th><th>End</th><th>Location</th><th>Slots</th><th></th></tr>
