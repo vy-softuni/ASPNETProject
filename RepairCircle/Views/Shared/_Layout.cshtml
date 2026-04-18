@@ -16,7 +16,12 @@
                 <a asp-controller="RepairRequests" asp-action="Index">Repairs</a>
                 <a asp-controller="RepairSessions" asp-action="Index">Sessions</a>
                 <a asp-controller="Volunteers" asp-action="Index">Volunteers</a>
+                <a asp-controller="BorrowRecords" asp-action="MyRecords">My Borrowings</a>
                 <a asp-controller="Home" asp-action="Contact">Contact</a>
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
+                }
             </nav>
             <partial name="_LoginPartial" />
         </div>

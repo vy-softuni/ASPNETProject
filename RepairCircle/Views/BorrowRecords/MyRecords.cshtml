@@ -1,8 +1,40 @@
+@model IReadOnlyCollection<BorrowRecordListItemViewModel>
 @{
     ViewData["Title"] = "My Borrow Records";
 }
 
 <section class="card">
     <h1>My Borrow Records</h1>
-    <p>This page will show the logged-in user's tool borrowing history.</p>
+    @if (!Model.Any())
+    {
+        <p>You have no borrow records yet.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Tool</th>
+                    <th>Reference</th>
+                    <th>Borrowed</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var record in Model)
+            {
+                <tr>
+                    <td>@record.ToolName</td>
+                    <td>@record.BorrowReference</td>
+                    <td>@record.BorrowDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                    <td>@record.DueDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                    <td>@record.Status</td>
+                    <td>@record.LocationName</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
 </section>

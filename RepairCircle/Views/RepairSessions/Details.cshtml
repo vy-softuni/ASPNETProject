@@ -1,8 +1,46 @@
+@model RepairSessionDetailsViewModel
 @{
     ViewData["Title"] = "Repair Session Details";
 }
 
 <section class="card">
-    <h1>Repair Session Details</h1>
-    <p>Placeholder view for repair session ID: <strong>@ViewBag.SessionId</strong></p>
+    <h1>@Model.Title</h1>
+    <p>@Model.Description</p>
+    <p><strong>When:</strong> @Model.StartDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm") - @Model.EndDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+    <p><strong>Slots:</strong> @Model.AvailableSlots / @Model.MaxParticipants</p>
+    <p><strong>Location:</strong> @Model.LocationName, @Model.Address, @Model.City</p>
+</section>
+
+<section class="card">
+    <h2>Volunteers</h2>
+    @if (!Model.VolunteerNames.Any())
+    {
+        <p>No volunteers assigned yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var volunteerName in Model.VolunteerNames)
+            {
+                <li>@volunteerName</li>
+            }
+        </ul>
+    }
+</section>
+
+<section class="card">
+    <h2>Linked repair requests</h2>
+    @if (!Model.RepairRequestTitles.Any())
+    {
+        <p>No repair requests linked to this session yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var requestTitle in Model.RepairRequestTitles)
+            {
+                <li>@requestTitle</li>
+            }
+        </ul>
+    }
 </section>

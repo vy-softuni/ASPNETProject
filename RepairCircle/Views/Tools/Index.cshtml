@@ -1,8 +1,58 @@
+@model ToolIndexViewModel
 @{
     ViewData["Title"] = "Tools";
 }
 
 <section class="card">
     <h1>Tools</h1>
-    <p>This page will list available tools with filtering and pagination in later steps.</p>
+    <form method="get" class="grid grid-3">
+        <div>
+            <label asp-for="SearchTerm">Search</label>
+            <input asp-for="SearchTerm" />
+        </div>
+        <div>
+            <label asp-for="CategoryId">Category</label>
+            <select asp-for="CategoryId">
+                <option value="">All categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label asp-for="LocationId">Location</label>
+            <select asp-for="LocationId">
+                <option value="">All locations</option>
+                @foreach (var location in Model.Locations)
+                {
+                    <option value="@location.Id">@location.Name</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label>
+                <input asp-for="OnlyAvailable" type="checkbox" value="true" /> Only available
+            </label>
+        </div>
+        <div>
+            <button class="btn btn-primary" type="submit">Filter</button>
+        </div>
+    </form>
+</section>
+
+<section class="grid grid-3">
+    @foreach (var tool in Model.Tools)
+    {
+        <article class="card">
+            <h2>@tool.Name</h2>
+            <p>@tool.Description</p>
+            <p><strong>Category:</strong> @tool.CategoryName</p>
+            <p><strong>Location:</strong> @tool.LocationName, @tool.City</p>
+            <p><strong>Condition:</strong> @tool.Condition</p>
+            <p><strong>Quantity:</strong> @tool.Quantity</p>
+            <p><strong>Status:</strong> @(tool.IsAvailable ? "Available" : "Unavailable")</p>
+            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@tool.Id">Details</a>
+        </article>
+    }
 </section>

@@ -1,8 +1,21 @@
+@model ToolDetailsViewModel
 @{
     ViewData["Title"] = "Tool Details";
 }
 
 <section class="card">
-    <h1>Tool Details</h1>
-    <p>Placeholder view for tool ID: <strong>@ViewBag.ToolId</strong></p>
+    <h1>@Model.Name</h1>
+    <p>@Model.Description</p>
+    <p><strong>Category:</strong> @Model.CategoryName</p>
+    <p><strong>Condition:</strong> @Model.Condition</p>
+    <p><strong>Status:</strong> @(Model.IsAvailable ? "Available" : "Unavailable")</p>
+    <p><strong>Quantity:</strong> @Model.Quantity</p>
+    <p><strong>Location:</strong> @Model.LocationName, @Model.Address, @Model.City</p>
+    <p><strong>Favorites:</strong> @Model.FavoritesCount</p>
+    <p><strong>Borrow records:</strong> @Model.BorrowRecordsCount</p>
+
+    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+    {
+        <p><strong>Map coordinates:</strong> @Model.Latitude, @Model.Longitude</p>
+    }
 </section>

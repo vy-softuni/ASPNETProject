@@ -1,0 +1,141 @@
+using Microsoft.EntityFrameworkCore;
+using RepairCircle.Data;
+using RepairCircle.Data.Models;
+using RepairCircle.Services.Interfaces;
+using RepairCircle.ViewModels.Common;
+using RepairCircle.ViewModels.RepairRequests;
+
+namespace RepairCircle.Services.Implementations;
+
+public class RepairRequestService : IRepairRequestService
+{
+    private readonly ApplicationDbContext dbContext;
+
+    public RepairRequestService(ApplicationDbContext dbContext)
+    {
+        this.dbContext = dbContext;
+    }
+
+    public async Task<RepairRequestIndexViewModel> GetAllAsync()
+    {
+        var requests = await dbContext.RepairRequests
+            .AsNoTracking()
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .OrderByDescending(r => r.RequestedDate)
+            .Select(r => new RepairRequestListItemViewModel
+            {
+                Id = r.Id,
+                Title = r.Title,
+                ItemType = r.ItemType,
+                Status = r.Status.ToString(),
+                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                AssignedVolunteer = r.AssignedVolunteerProfile != null
+                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
+                    : null,
+                LocationName = $"{r.Location.Name} ({r.Location.City})",
+                RequestedDate = r.RequestedDate
+            })
+            .ToListAsync();
+
+        return new RepairRequestIndexViewModel
+        {
+            Requests = requests
+        };
+    }
+
+    public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id)
+    {
+        return await dbContext.RepairRequests
+            .AsNoTracking()
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .Include(r => r.RepairSession)
+            .Include(r => r.Feedbacks)
+                .ThenInclude(f => f.User)
+            .Where(r => r.Id == id)
+            .Select(r => new RepairRequestDetailsViewModel
+            {
+                Id = r.Id,
+                Title = r.Title,
+                Description = r.Description,
+                ItemType = r.ItemType,
+                ImageUrl = r.ImageUrl,
+                Status = r.Status.ToString(),
+                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                AssignedVolunteer = r.AssignedVolunteerProfile != null
+                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
+                    : null,
+                LocationName = r.Location.Name,
+                City = r.Location.City,
+                RepairSessionTitle = r.RepairSession != null ? r.RepairSession.Title : null,
+                RequestedDate = r.RequestedDate,
+                Feedback = r.Feedbacks
+                    .OrderByDescending(f => f.CreatedOn)
+                    .Select(f => new RepairRequestFeedbackViewModel
+                    {
+                        UserName = f.User.FullName ?? f.User.UserName ?? f.User.Email ?? "Unknown user",
+                        Rating = f.Rating,
+                        Comment = f.Comment,
+                        CreatedOn = f.CreatedOn
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<RepairRequestCreateViewModel> GetCreateModelAsync()
+    {
+        var locations = await dbContext.Locations
+            .AsNoTracking()
+            .OrderBy(l => l.Name)
+            .Select(l => new LookupViewModel
+            {
+                Id = l.Id,
+                Name = $"{l.Name} ({l.City})"
+            })
+            .ToListAsync();
+
+        var sessions = await dbContext.RepairSessions
+            .AsNoTracking()
+            .Where(rs => rs.StartDate >= DateTime.UtcNow)
+            .OrderBy(rs => rs.StartDate)
+            .Select(rs => new LookupViewModel
+            {
+                Id = rs.Id,
+                Name = $"{rs.Title} - {rs.StartDate:dd.MM.yyyy HH:mm}"
+            })
+            .ToListAsync();
+
+        return new RepairRequestCreateViewModel
+        {
+            Locations = locations,
+            RepairSessions = sessions,
+            Input = new RepairRequestCreateInputModel()
+        };
+    }
+
+    public async Task<int> CreateAsync(RepairRequestCreateInputModel model, string userId)
+    {
+        var repairRequest = new RepairRequest
+        {
+            Title = model.Title,
+            Description = model.Description,
+            ItemType = model.ItemType,
+            ImageUrl = model.ImageUrl,
+            SubmittedByUserId = userId,
+            LocationId = model.LocationId,
+            RepairSessionId = model.RepairSessionId,
+            RequestedDate = DateTime.UtcNow
+        };
+
+        await dbContext.RepairRequests.AddAsync(repairRequest);
+        await dbContext.SaveChangesAsync();
+
+        return repairRequest.Id;
+    }
+}

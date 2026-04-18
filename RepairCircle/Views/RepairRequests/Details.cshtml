@@ -1,8 +1,36 @@
+@model RepairRequestDetailsViewModel
 @{
     ViewData["Title"] = "Repair Request Details";
 }
 
 <section class="card">
-    <h1>Repair Request Details</h1>
-    <p>Placeholder view for repair request ID: <strong>@ViewBag.RequestId</strong></p>
+    <h1>@Model.Title</h1>
+    <p>@Model.Description</p>
+    <p><strong>Item type:</strong> @Model.ItemType</p>
+    <p><strong>Status:</strong> @Model.Status</p>
+    <p><strong>Submitted by:</strong> @Model.SubmittedBy</p>
+    <p><strong>Assigned volunteer:</strong> @(Model.AssignedVolunteer ?? "Not assigned")</p>
+    <p><strong>Location:</strong> @Model.LocationName, @Model.City</p>
+    <p><strong>Repair session:</strong> @(Model.RepairSessionTitle ?? "Independent request")</p>
+    <p><strong>Requested on:</strong> @Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+</section>
+
+<section class="card">
+    <h2>Feedback</h2>
+    @if (!Model.Feedback.Any())
+    {
+        <p>No feedback yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var feedback in Model.Feedback)
+            {
+                <li>
+                    <strong>@feedback.UserName</strong> - Rating: @feedback.Rating/5<br />
+                    @feedback.Comment
+                </li>
+            }
+        </ul>
+    }
 </section>

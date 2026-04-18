@@ -1,8 +1,34 @@
+@model DashboardStatsViewModel
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
 
 <section class="card">
     <h1>Admin Dashboard</h1>
-    <p>This starter area is ready for administrator-only features in later steps.</p>
+    <div class="grid grid-3">
+        <article class="card">
+            <h2>Total tools</h2>
+            <p>@Model.ToolsCount</p>
+        </article>
+        <article class="card">
+            <h2>Available tools</h2>
+            <p>@Model.AvailableToolsCount</p>
+        </article>
+        <article class="card">
+            <h2>Repair requests</h2>
+            <p>@Model.RepairRequestsCount</p>
+        </article>
+        <article class="card">
+            <h2>Pending borrowings</h2>
+            <p>@Model.PendingBorrowRecordsCount</p>
+        </article>
+        <article class="card">
+            <h2>Approved volunteers</h2>
+            <p>@Model.ApprovedVolunteersCount</p>
+        </article>
+        <article class="card">
+            <h2>Upcoming sessions</h2>
+            <p>@Model.UpcomingSessionsCount</p>
+        </article>
+    </div>
 </section>

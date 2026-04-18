@@ -1,12 +1,24 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using RepairCircle.Models;
+using RepairCircle.Services.Interfaces;
 
 namespace RepairCircle.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index() => View();
+    private readonly IHomeService homeService;
+
+    public HomeController(IHomeService homeService)
+    {
+        this.homeService = homeService;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var model = await homeService.GetHomePageDataAsync();
+        return View(model);
+    }
 
     public IActionResult About() => View();
 

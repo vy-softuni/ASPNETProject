@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
 using RepairCircle.Data.Seed;
+using RepairCircle.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddRepairCircleServices();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 

@@ -1,8 +1,21 @@
+@model IReadOnlyCollection<VolunteerListItemViewModel>
 @{
     ViewData["Title"] = "Volunteers";
 }
 
 <section class="card">
     <h1>Volunteers</h1>
-    <p>This page will later show volunteer profiles, skills, and approval status.</p>
+    <p>Approved community volunteers and their repair skills.</p>
+</section>
+
+<section class="grid grid-2">
+    @foreach (var volunteer in Model)
+    {
+        <article class="card">
+            <h2>@volunteer.FullName</h2>
+            <p>@volunteer.Bio</p>
+            <p><strong>Experience:</strong> @volunteer.ExperienceLevel</p>
+            <p><strong>Skills:</strong> @string.Join(", ", volunteer.Skills)</p>
+        </article>
+    }
 </section>

@@ -6,6 +6,7 @@
     --primary: #2563eb;
     --primary-dark: #1d4ed8;
     --border: #dbe2ea;
+    --danger: #b91c1c;
 }
 
 * {
@@ -17,6 +18,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     background: var(--bg);
     color: var(--text);
+    line-height: 1.5;
 }
 
 .container {
@@ -94,6 +96,10 @@ body {
     gap: 1rem;
 }
 
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
 .grid-3 {
     grid-template-columns: repeat(3, 1fr);
 }
@@ -106,7 +112,17 @@ body {
 }
 
 .btn,
-.link-button {
+.link-button,
+button,
+select,
+input,
+textarea {
+    font: inherit;
+}
+
+.btn,
+.link-button,
+button {
     display: inline-block;
     padding: 0.75rem 1rem;
     border-radius: 10px;
@@ -116,12 +132,16 @@ body {
     border: 1px solid transparent;
 }
 
-.btn-primary {
+.btn-primary,
+button,
+input[type="submit"] {
     background: var(--primary);
     color: #fff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+button:hover,
+input[type="submit"]:hover {
     background: var(--primary-dark);
 }
 
@@ -152,8 +172,67 @@ code {
     padding: 0.15rem 0.4rem;
 }
 
+label {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    background: #fff;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.4rem;
+}
+
+fieldset {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+ul {
+    padding-left: 1.25rem;
+}
+
+.validation-summary-errors,
+.field-validation-error,
+input-validation-error,
+textarea-validation-error,
+select-validation-error {
+    color: var(--danger);
+}
+
 @media (max-width: 900px) {
     .hero,
+    .grid-2,
     .grid-3 {
         grid-template-columns: 1fr;
     }

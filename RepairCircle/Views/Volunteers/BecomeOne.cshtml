@@ -1,8 +1,47 @@
+@model VolunteerBecomeViewModel
 @{
     ViewData["Title"] = "Become a Volunteer";
 }
 
 <section class="card">
     <h1>Become a Volunteer</h1>
-    <p>This page will become the volunteer profile creation form.</p>
+
+    <form asp-action="BecomeOne" method="post">
+        @Html.AntiForgeryToken()
+
+        <div>
+            <label asp-for="Input.Bio"></label>
+            <textarea asp-for="Input.Bio"></textarea>
+            <span asp-validation-for="Input.Bio"></span>
+        </div>
+
+        <div>
+            <label asp-for="Input.ExperienceLevel"></label>
+            <select asp-for="Input.ExperienceLevel">
+                @foreach (var level in Model.ExperienceLevels)
+                {
+                    <option value="@level">@level</option>
+                }
+            </select>
+            <span asp-validation-for="Input.ExperienceLevel"></span>
+        </div>
+
+        <fieldset>
+            <legend>Select skills</legend>
+            @foreach (var skill in Model.Skills)
+            {
+                <label>
+                    <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" /> @skill.Name
+                </label>
+
+                <br />
+            }
+        </fieldset>
+
+        <button class="btn btn-primary" type="submit">Submit volunteer profile</button>
+    </form>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

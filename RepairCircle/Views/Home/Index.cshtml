@@ -1,3 +1,4 @@
+@model HomeIndexViewModel
 @{
     ViewData["Title"] = "Home";
 }
@@ -13,26 +14,49 @@
         </div>
     </div>
     <div class="hero-card">
-        <h2>Starter project status</h2>
+        <h2>Community Snapshot</h2>
         <ul>
-            <li>Step 1: MVC project created</li>
-            <li>Step 2: Identity and SQL Server configured</li>
-            <li>Step 3: Core entity models added</li>
+            <li><strong>@Model.AvailableToolsCount</strong> available tools</li>
+            <li><strong>@Model.ActiveRepairRequestsCount</strong> active repair requests</li>
+            <li><strong>@Model.UpcomingSessionsCount</strong> upcoming repair sessions</li>
+            <li><strong>@Model.ApprovedVolunteersCount</strong> approved volunteers</li>
         </ul>
     </div>
 </section>
 
 <section class="grid grid-3">
-    <article class="card">
-        <h3>Borrow Tools</h3>
-        <p>Find useful tools in your local repair network.</p>
-    </article>
-    <article class="card">
-        <h3>Request Repairs</h3>
-        <p>Submit repair requests for electronics, bikes, sewing, and more.</p>
-    </article>
-    <article class="card">
-        <h3>Join as a Volunteer</h3>
-        <p>Share your skills and help reduce waste in your community.</p>
-    </article>
+    @foreach (var tool in Model.FeaturedTools)
+    {
+        <article class="card">
+            <h3>@tool.Name</h3>
+            <p>@tool.Description</p>
+            <p><strong>@tool.CategoryName</strong> · @tool.LocationName</p>
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.Id">View tool</a>
+        </article>
+    }
+</section>
+
+<section class="card">
+    <h2>Latest announcements</h2>
+    @if (!Model.LatestAnnouncements.Any())
+    {
+        <p>No announcements yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var announcement in Model.LatestAnnouncements)
+            {
+                <li>
+                    <strong>@announcement.Title</strong>
+                    @if (announcement.IsImportant)
+                    {
+                        <span> - Important</span>
+                    }
+                    <br />
+                    <span>@announcement.Content</span>
+                </li>
+            }
+        </ul>
+    }
 </section>

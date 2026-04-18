@@ -1,18 +1,64 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RepairCircle.Services.Interfaces;
+using RepairCircle.ViewModels.RepairRequests;
 
 namespace RepairCircle.Controllers;
 
 public class RepairRequestsController : Controller
 {
-    public IActionResult Index() => View();
+    private readonly IRepairRequestService repairRequestService;
 
-    public IActionResult Details(int id)
+    public RepairRequestsController(IRepairRequestService repairRequestService)
     {
-        ViewBag.RequestId = id;
-        return View();
+        this.repairRequestService = repairRequestService;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var model = await repairRequestService.GetAllAsync();
+        return View(model);
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var model = await repairRequestService.GetByIdAsync(id);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        return View(model);
     }
 
     [Authorize]
-    public IActionResult Create() => View();
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var model = await repairRequestService.GetCreateModelAsync();
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(RepairRequestCreateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var refreshedModel = await repairRequestService.GetCreateModelAsync();
+            refreshedModel.Input = model.Input;
+            return View(refreshedModel);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var repairRequestId = await repairRequestService.CreateAsync(model.Input, userId);
+        return RedirectToAction(nameof(Details), new { id = repairRequestId });
+    }
 }
