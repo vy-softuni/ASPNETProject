@@ -16,29 +16,14 @@ public class RepairRequestService : IRepairRequestService
         this.dbContext = dbContext;
     }
 
-    public async Task<RepairRequestIndexViewModel> GetAllAsync()
+    public async Task<RepairRequestIndexViewModel> GetAllAsync(int page = 1, int pageSize = 6)
     {
-        var requests = await BuildRequestListQuery()
-            .OrderByDescending(r => r.RequestedDate)
-            .ToListAsync();
-
-        return new RepairRequestIndexViewModel
-        {
-            Requests = requests
-        };
+        return await GetPagedAsync(BuildRequestListQuery(), page, pageSize);
     }
 
-    public async Task<RepairRequestIndexViewModel> GetMineAsync(string userId)
+    public async Task<RepairRequestIndexViewModel> GetMineAsync(string userId, int page = 1, int pageSize = 6)
     {
-        var requests = await BuildRequestListQuery()
-            .Where(r => r.SubmittedByUserId == userId)
-            .OrderByDescending(r => r.RequestedDate)
-            .ToListAsync();
-
-        return new RepairRequestIndexViewModel
-        {
-            Requests = requests
-        };
+        return await GetPagedAsync(BuildRequestListQuery().Where(r => r.SubmittedByUserId == userId), page, pageSize);
     }
 
     public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id)
@@ -147,6 +132,33 @@ public class RepairRequestService : IRepairRequestService
         await dbContext.SaveChangesAsync();
 
         return repairRequest.Id;
+    }
+
+    private async Task<RepairRequestIndexViewModel> GetPagedAsync(IQueryable<RepairRequestListProjection> query, int page, int pageSize)
+    {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 6 : pageSize;
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var requests = await query
+            .OrderByDescending(r => r.RequestedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new RepairRequestIndexViewModel
+        {
+            Requests = requests,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
+        };
     }
 
     private IQueryable<RepairRequestListProjection> BuildRequestListQuery()

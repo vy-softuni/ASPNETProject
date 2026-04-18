@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<VolunteerListItemViewModel>
+@model PagedCollectionViewModel<VolunteerListItemViewModel>
 @{
     ViewData["Title"] = "Volunteers";
 }
@@ -9,7 +9,7 @@
     <p>These volunteers have been approved to help with repair requests and workshop sessions.</p>
 </section>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <section class="empty-state">
         <h2>No volunteers listed yet</h2>
@@ -19,7 +19,7 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var volunteer in Model)
+        @foreach (var volunteer in Model.Items)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
@@ -33,3 +33,5 @@ else
         }
     </section>
 }
+
+<partial name="_PaginationPartial" model="Model.Pagination" />

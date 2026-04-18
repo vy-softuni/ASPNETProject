@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<FavoriteListItemViewModel>
+@model PagedCollectionViewModel<FavoriteListItemViewModel>
 @{
     ViewData["Title"] = "My Favorite Tools";
 }
@@ -9,7 +9,7 @@
     <p>Keep a shortlist of useful tools you may want to borrow later.</p>
 </section>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <section class="empty-state">
         <h2>No favorites yet</h2>
@@ -19,7 +19,7 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var tool in Model)
+        @foreach (var tool in Model.Items)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
@@ -40,3 +40,5 @@ else
         }
     </section>
 }
+
+<partial name="_PaginationPartial" model="Model.Pagination" />

@@ -15,8 +15,11 @@ public class ToolService : IToolService
         this.dbContext = dbContext;
     }
 
-    public async Task<ToolIndexViewModel> GetAllAsync(string? searchTerm = null, int? categoryId = null, int? locationId = null, bool? onlyAvailable = null)
+    public async Task<ToolIndexViewModel> GetAllAsync(string? searchTerm = null, int? categoryId = null, int? locationId = null, bool? onlyAvailable = null, int page = 1, int pageSize = 9)
     {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 9 : pageSize;
+
         var toolsQuery = dbContext.Tools
             .AsNoTracking()
             .Include(t => t.ToolCategory)
@@ -46,9 +49,15 @@ public class ToolService : IToolService
             toolsQuery = toolsQuery.Where(t => t.IsAvailable && t.Quantity > 0);
         }
 
+        var totalItems = await toolsQuery.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
         var tools = await toolsQuery
             .OrderByDescending(t => t.IsAvailable)
             .ThenBy(t => t.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(t => new ToolListItemViewModel
             {
                 Id = t.Id,
@@ -92,7 +101,13 @@ public class ToolService : IToolService
             OnlyAvailable = onlyAvailable,
             Categories = categories,
             Locations = locations,
-            Tools = tools
+            Tools = tools,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
         };
     }
 

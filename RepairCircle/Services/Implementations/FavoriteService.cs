@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
 using RepairCircle.Services.Interfaces;
+using RepairCircle.ViewModels.Common;
 using RepairCircle.ViewModels.Favorites;
 
 namespace RepairCircle.Services.Implementations;
@@ -15,16 +16,27 @@ public class FavoriteService : IFavoriteService
         this.dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<FavoriteListItemViewModel>> GetUserFavoritesAsync(string userId)
+    public async Task<PagedCollectionViewModel<FavoriteListItemViewModel>> GetUserFavoritesAsync(string userId, int page = 1, int pageSize = 6)
     {
-        return await dbContext.Favorites
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 6 : pageSize;
+
+        var query = dbContext.Favorites
             .AsNoTracking()
             .Include(f => f.Tool)
                 .ThenInclude(t => t.ToolCategory)
             .Include(f => f.Tool)
                 .ThenInclude(t => t.Location)
-            .Where(f => f.UserId == userId)
+            .Where(f => f.UserId == userId);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var favorites = await query
             .OrderByDescending(f => f.CreatedOn)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(f => new FavoriteListItemViewModel
             {
                 ToolId = f.ToolId,
@@ -35,6 +47,17 @@ public class FavoriteService : IFavoriteService
                 IsAvailable = f.Tool.IsAvailable && f.Tool.Quantity > 0
             })
             .ToListAsync();
+
+        return new PagedCollectionViewModel<FavoriteListItemViewModel>
+        {
+            Items = favorites,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
+        };
     }
 
     public async Task AddAsync(string userId, int toolId)

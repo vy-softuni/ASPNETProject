@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
+using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Areas.Admin.Controllers;
 
@@ -18,14 +19,32 @@ public class ToolsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var tools = await dbContext.Tools
+        const int pageSize = 10;
+        page = page < 1 ? 1 : page;
+
+        var query = dbContext.Tools
             .AsNoTracking()
             .Include(t => t.ToolCategory)
-            .Include(t => t.Location)
+            .Include(t => t.Location);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var tools = await query
             .OrderBy(t => t.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        ViewBag.Pagination = new PaginationViewModel
+        {
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
         return View(tools);
     }

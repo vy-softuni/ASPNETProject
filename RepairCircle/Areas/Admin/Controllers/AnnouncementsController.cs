@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
+using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Areas.Admin.Controllers;
 
@@ -17,12 +18,29 @@ public class AnnouncementsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var announcements = await dbContext.Announcements
-            .AsNoTracking()
+        const int pageSize = 10;
+        page = page < 1 ? 1 : page;
+
+        var query = dbContext.Announcements.AsNoTracking();
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var announcements = await query
             .OrderByDescending(a => a.CreatedOn)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        ViewBag.Pagination = new PaginationViewModel
+        {
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
         return View(announcements);
     }

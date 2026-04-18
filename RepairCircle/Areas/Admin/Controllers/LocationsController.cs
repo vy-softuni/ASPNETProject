@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
+using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Areas.Admin.Controllers;
 
@@ -17,13 +18,30 @@ public class LocationsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var locations = await dbContext.Locations
-            .AsNoTracking()
+        const int pageSize = 10;
+        page = page < 1 ? 1 : page;
+
+        var query = dbContext.Locations.AsNoTracking();
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var locations = await query
             .OrderBy(l => l.City)
             .ThenBy(l => l.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        ViewBag.Pagination = new PaginationViewModel
+        {
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
         return View(locations);
     }

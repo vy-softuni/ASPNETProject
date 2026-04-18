@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<BorrowRecordListItemViewModel>
+@model PagedCollectionViewModel<BorrowRecordListItemViewModel>
 @{
     ViewData["Title"] = "My Borrow Records";
 }
@@ -9,7 +9,7 @@
     <p>Track active, approved, and returned tool requests from one place.</p>
 </section>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <section class="empty-state">
         <h2>No borrowing records yet</h2>
@@ -31,7 +31,7 @@ else
                 </tr>
             </thead>
             <tbody>
-            @foreach (var record in Model)
+            @foreach (var record in Model.Items)
             {
                 <tr>
                     <td>@record.ToolName</td>
@@ -46,3 +46,5 @@ else
         </table>
     </section>
 }
+
+<partial name="_PaginationPartial" model="Model.Pagination" />

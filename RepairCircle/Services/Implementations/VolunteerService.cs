@@ -17,14 +17,25 @@ public class VolunteerService : IVolunteerService
         this.dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<VolunteerListItemViewModel>> GetApprovedAsync()
+    public async Task<PagedCollectionViewModel<VolunteerListItemViewModel>> GetApprovedAsync(int page = 1, int pageSize = 6)
     {
-        return await dbContext.VolunteerProfiles
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 6 : pageSize;
+
+        var query = dbContext.VolunteerProfiles
             .AsNoTracking()
             .Include(v => v.User)
             .Include(v => v.Skills)
-            .Where(v => v.IsApproved)
+            .Where(v => v.IsApproved);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var volunteers = await query
             .OrderBy(v => v.User.FullName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(v => new VolunteerListItemViewModel
             {
                 Id = v.Id,
@@ -34,6 +45,17 @@ public class VolunteerService : IVolunteerService
                 Skills = v.Skills.OrderBy(s => s.Name).Select(s => s.Name).ToList()
             })
             .ToListAsync();
+
+        return new PagedCollectionViewModel<VolunteerListItemViewModel>
+        {
+            Items = volunteers,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
+        };
     }
 
     public async Task<VolunteerBecomeViewModel> GetBecomeViewModelAsync()

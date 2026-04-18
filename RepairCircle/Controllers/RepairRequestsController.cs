@@ -15,14 +15,14 @@ public class RepairRequestsController : Controller
         this.repairRequestService = repairRequestService;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var model = await repairRequestService.GetAllAsync();
+        var model = await repairRequestService.GetAllAsync(page);
         return View(model);
     }
 
     [Authorize]
-    public async Task<IActionResult> MyRequests()
+    public async Task<IActionResult> MyRequests(int page = 1)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -30,7 +30,7 @@ public class RepairRequestsController : Controller
             return Challenge();
         }
 
-        var model = await repairRequestService.GetMineAsync(userId);
+        var model = await repairRequestService.GetMineAsync(userId, page);
         ViewData["Title"] = "My Repair Requests";
         return View("Index", model);
     }

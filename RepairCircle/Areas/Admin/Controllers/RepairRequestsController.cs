@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
+using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Areas.Admin.Controllers;
 
@@ -19,17 +20,35 @@ public class RepairRequestsController : Controller
         this.dbContext = dbContext;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var requests = await dbContext.RepairRequests
+        const int pageSize = 10;
+        page = page < 1 ? 1 : page;
+
+        var query = dbContext.RepairRequests
             .AsNoTracking()
             .Include(r => r.SubmittedByUser)
             .Include(r => r.AssignedVolunteerProfile)
                 .ThenInclude(v => v!.User)
             .Include(r => r.Location)
-            .Include(r => r.RepairSession)
+            .Include(r => r.RepairSession);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var requests = await query
             .OrderByDescending(r => r.RequestedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        ViewBag.Pagination = new PaginationViewModel
+        {
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
         return View(requests);
     }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Services.Interfaces;
+using RepairCircle.ViewModels.Common;
 using RepairCircle.ViewModels.RepairSessions;
 
 namespace RepairCircle.Services.Implementations;
@@ -14,13 +15,24 @@ public class RepairSessionService : IRepairSessionService
         this.dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<RepairSessionListItemViewModel>> GetAllUpcomingAsync()
+    public async Task<RepairSessionIndexViewModel> GetAllUpcomingAsync(int page = 1, int pageSize = 6)
     {
-        return await dbContext.RepairSessions
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 6 : pageSize;
+
+        var query = dbContext.RepairSessions
             .AsNoTracking()
             .Include(rs => rs.Location)
-            .Where(rs => rs.EndDate >= DateTime.UtcNow)
+            .Where(rs => rs.EndDate >= DateTime.UtcNow);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var sessions = await query
             .OrderBy(rs => rs.StartDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(rs => new RepairSessionListItemViewModel
             {
                 Id = rs.Id,
@@ -34,6 +46,17 @@ public class RepairSessionService : IRepairSessionService
                 City = rs.Location.City
             })
             .ToListAsync();
+
+        return new RepairSessionIndexViewModel
+        {
+            Sessions = sessions,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
+        };
     }
 
     public async Task<RepairSessionDetailsViewModel?> GetByIdAsync(int id)

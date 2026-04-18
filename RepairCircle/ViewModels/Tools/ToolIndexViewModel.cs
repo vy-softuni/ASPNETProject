@@ -12,4 +12,5 @@ public class ToolIndexViewModel
     public IReadOnlyCollection<LookupViewModel> Categories { get; set; } = Array.Empty<LookupViewModel>();
     public IReadOnlyCollection<LookupViewModel> Locations { get; set; } = Array.Empty<LookupViewModel>();
     public IReadOnlyCollection<ToolListItemViewModel> Tools { get; set; } = Array.Empty<ToolListItemViewModel>();
+    public PaginationViewModel Pagination { get; set; } = new();
 }

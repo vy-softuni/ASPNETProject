@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<RepairSessionListItemViewModel>
+@model RepairSessionIndexViewModel
 @{
     ViewData["Title"] = "Repair Sessions";
 }
@@ -9,7 +9,7 @@
     <p>These sessions bring together volunteers and community members to fix common household and workshop items.</p>
 </section>
 
-@if (!Model.Any())
+@if (!Model.Sessions.Any())
 {
     <section class="empty-state">
         <h2>No sessions planned yet</h2>
@@ -19,7 +19,7 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var session in Model)
+        @foreach (var session in Model.Sessions)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
@@ -49,3 +49,5 @@ else
         }
     </section>
 }
+
+<partial name="_PaginationPartial" model="Model.Pagination" />

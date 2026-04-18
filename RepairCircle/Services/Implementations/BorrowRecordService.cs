@@ -4,6 +4,7 @@ using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
 using RepairCircle.Services.Interfaces;
 using RepairCircle.ViewModels.BorrowRecords;
+using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Services.Implementations;
 
@@ -16,14 +17,25 @@ public class BorrowRecordService : IBorrowRecordService
         this.dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<BorrowRecordListItemViewModel>> GetUserRecordsAsync(string userId)
+    public async Task<PagedCollectionViewModel<BorrowRecordListItemViewModel>> GetUserRecordsAsync(string userId, int page = 1, int pageSize = 10)
     {
-        return await dbContext.BorrowRecords
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+
+        var query = dbContext.BorrowRecords
             .AsNoTracking()
             .Include(br => br.Tool)
                 .ThenInclude(t => t.Location)
-            .Where(br => br.UserId == userId)
+            .Where(br => br.UserId == userId);
+
+        var totalItems = await query.CountAsync();
+        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+        page = Math.Min(page, totalPages);
+
+        var records = await query
             .OrderByDescending(br => br.BorrowDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(br => new BorrowRecordListItemViewModel
             {
                 Id = br.Id,
@@ -36,6 +48,17 @@ public class BorrowRecordService : IBorrowRecordService
                 LocationName = br.Tool.Location.Name
             })
             .ToListAsync();
+
+        return new PagedCollectionViewModel<BorrowRecordListItemViewModel>
+        {
+            Items = records,
+            Pagination = new PaginationViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            }
+        };
     }
 
     public async Task<BorrowRecordCreateViewModel?> GetCreateModelAsync(int toolId)
