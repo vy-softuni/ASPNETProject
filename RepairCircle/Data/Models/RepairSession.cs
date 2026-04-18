@@ -25,4 +25,5 @@ public class RepairSession : BaseEntity
     public Location Location { get; set; } = null!;
 
     public ICollection<VolunteerProfile> Volunteers { get; set; } = new HashSet<VolunteerProfile>();
+    public ICollection<RepairRequest> RepairRequests { get; set; } = new HashSet<RepairRequest>();
 }

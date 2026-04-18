@@ -32,6 +32,9 @@ public class RepairRequest : BaseEntity
     public int LocationId { get; set; }
     public Location Location { get; set; } = null!;
 
+    public int? RepairSessionId { get; set; }
+    public RepairSession? RepairSession { get; set; }
+
     public DateTime RequestedDate { get; set; } = DateTime.UtcNow;
 
     public ICollection<Feedback> Feedbacks { get; set; } = new HashSet<Feedback>();

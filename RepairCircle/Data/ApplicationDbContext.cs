@@ -43,6 +43,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(f => new { f.UserId, f.ToolId })
             .IsUnique();
 
+        builder.Entity<Feedback>()
+            .HasIndex(f => new { f.UserId, f.RepairRequestId })
+            .IsUnique();
+
+        builder.Entity<VolunteerProfile>()
+            .HasIndex(v => v.UserId)
+            .IsUnique();
+
         builder.Entity<Location>()
             .Property(l => l.Latitude)
             .HasColumnType("decimal(9,6)");
@@ -50,6 +58,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Location>()
             .Property(l => l.Longitude)
             .HasColumnType("decimal(9,6)");
+
+        builder.Entity<Tool>()
+            .ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Tools_Quantity_NonNegative", "[Quantity] >= 0");
+            });
+
+        builder.Entity<BorrowRecord>()
+            .ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_BorrowRecords_DueDate_After_BorrowDate", "[DueDate] >= [BorrowDate]");
+            });
+
+        builder.Entity<RepairSession>()
+            .ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_RepairSessions_AvailableSlots_Valid", "[AvailableSlots] >= 0 AND [AvailableSlots] <= [MaxParticipants]");
+                t.HasCheckConstraint("CK_RepairSessions_EndDate_After_StartDate", "[EndDate] >= [StartDate]");
+            });
 
         builder.Entity<Tool>()
             .HasOne(t => t.ToolCategory)
@@ -81,6 +108,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(r => r.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<RepairRequest>()
+            .HasOne(r => r.RepairSession)
+            .WithMany(rs => rs.RepairRequests)
+            .HasForeignKey(r => r.RepairSessionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Entity<RepairSession>()
             .HasOne(rs => rs.Location)
             .WithMany(l => l.RepairSessions)
@@ -92,6 +125,52 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithOne()
             .HasForeignKey<VolunteerProfile>(v => v.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<VolunteerProfile>()
+            .HasMany(v => v.Skills)
+            .WithMany(s => s.VolunteerProfiles)
+            .UsingEntity<Dictionary<string, object>>(
+                "VolunteerProfileSkill",
+                j => j
+                    .HasOne<Skill>()
+                    .WithMany()
+                    .HasForeignKey("SkillId")
+                    .HasConstraintName("FK_VolunteerProfileSkill_Skills_SkillId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j => j
+                    .HasOne<VolunteerProfile>()
+                    .WithMany()
+                    .HasForeignKey("VolunteerProfileId")
+                    .HasConstraintName("FK_VolunteerProfileSkill_VolunteerProfiles_VolunteerProfileId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j =>
+                {
+                    j.ToTable("VolunteerProfileSkills");
+                    j.HasKey("VolunteerProfileId", "SkillId");
+                });
+
+        builder.Entity<VolunteerProfile>()
+            .HasMany(v => v.RepairSessions)
+            .WithMany(rs => rs.Volunteers)
+            .UsingEntity<Dictionary<string, object>>(
+                "RepairSessionVolunteer",
+                j => j
+                    .HasOne<RepairSession>()
+                    .WithMany()
+                    .HasForeignKey("RepairSessionId")
+                    .HasConstraintName("FK_RepairSessionVolunteer_RepairSessions_RepairSessionId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j => j
+                    .HasOne<VolunteerProfile>()
+                    .WithMany()
+                    .HasForeignKey("VolunteerProfileId")
+                    .HasConstraintName("FK_RepairSessionVolunteer_VolunteerProfiles_VolunteerProfileId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j =>
+                {
+                    j.ToTable("RepairSessionVolunteers");
+                    j.HasKey("RepairSessionId", "VolunteerProfileId");
+                });
 
         builder.Entity<BorrowRecord>()
             .HasOne(b => b.Tool)
