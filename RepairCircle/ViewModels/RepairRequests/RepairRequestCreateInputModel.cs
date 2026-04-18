@@ -4,23 +4,30 @@ namespace RepairCircle.ViewModels.RepairRequests;
 
 public class RepairRequestCreateInputModel
 {
-    [Required]
-    [StringLength(120)]
+    [Required(ErrorMessage = "Please enter a short title for the repair request.")]
+    [Display(Name = "Request title")]
+    [StringLength(120, MinimumLength = 5, ErrorMessage = "The title must be between 5 and 120 characters.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(2000)]
+    [Required(ErrorMessage = "Please describe the repair issue.")]
+    [Display(Name = "Problem description")]
+    [StringLength(2000, MinimumLength = 15, ErrorMessage = "The description must be between 15 and 2000 characters.")]
     public string Description { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(80)]
+    [Required(ErrorMessage = "Please specify the item type.")]
+    [Display(Name = "Item type")]
+    [StringLength(80, MinimumLength = 3, ErrorMessage = "The item type must be between 3 and 80 characters.")]
     public string ItemType { get; set; } = string.Empty;
 
-    [StringLength(255)]
+    [Display(Name = "Image URL")]
+    [StringLength(255, ErrorMessage = "The image URL cannot be longer than 255 characters.")]
+    [Url(ErrorMessage = "Please enter a valid image URL.")]
     public string? ImageUrl { get; set; }
 
-    [Range(1, int.MaxValue)]
+    [Display(Name = "Location")]
+    [Range(1, int.MaxValue, ErrorMessage = "Please choose a location.")]
     public int LocationId { get; set; }
 
+    [Display(Name = "Repair session")]
     public int? RepairSessionId { get; set; }
 }

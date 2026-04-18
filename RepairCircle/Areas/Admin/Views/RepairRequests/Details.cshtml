@@ -38,6 +38,7 @@
     <aside class="card detail-sidebar">
         <h2>Manage assignment</h2>
         <form asp-action="Update" method="post">
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="@Model.Id" />
 
@@ -59,6 +60,8 @@
                 <label for="status">Status</label>
                 <select id="status" name="status" asp-items="ViewBag.Statuses"></select>
             </div>
+
+            <p class="muted small-text">Only approved volunteers can be assigned. Session and status changes are saved immediately.</p>
 
             <div class="actions">
                 <button type="submit" class="btn btn-primary">Save changes</button>

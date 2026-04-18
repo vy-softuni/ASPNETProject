@@ -58,19 +58,29 @@ public class VolunteerService : IVolunteerService
 
     public async Task<int> BecomeVolunteerAsync(string userId, VolunteerBecomeInputModel inputModel)
     {
+        if (!Enum.TryParse<ExperienceLevel>(inputModel.ExperienceLevel, out var experienceLevel))
+        {
+            return 0;
+        }
+
+        var selectedSkills = await dbContext.Skills
+            .Where(s => inputModel.SelectedSkillIds.Contains(s.Id))
+            .ToListAsync();
+
+        if (selectedSkills.Count == 0)
+        {
+            return 0;
+        }
+
         var existingVolunteerProfile = await dbContext.VolunteerProfiles
             .Include(v => v.Skills)
             .FirstOrDefaultAsync(v => v.UserId == userId);
 
         if (existingVolunteerProfile != null)
         {
-            existingVolunteerProfile.Bio = inputModel.Bio;
-            existingVolunteerProfile.ExperienceLevel = Enum.Parse<ExperienceLevel>(inputModel.ExperienceLevel);
+            existingVolunteerProfile.Bio = string.IsNullOrWhiteSpace(inputModel.Bio) ? null : inputModel.Bio.Trim();
+            existingVolunteerProfile.ExperienceLevel = experienceLevel;
             existingVolunteerProfile.Skills.Clear();
-
-            var selectedSkills = await dbContext.Skills
-                .Where(s => inputModel.SelectedSkillIds.Contains(s.Id))
-                .ToListAsync();
 
             foreach (var skill in selectedSkills)
             {
@@ -84,16 +94,12 @@ public class VolunteerService : IVolunteerService
         var volunteerProfile = new VolunteerProfile
         {
             UserId = userId,
-            Bio = inputModel.Bio,
-            ExperienceLevel = Enum.Parse<ExperienceLevel>(inputModel.ExperienceLevel),
+            Bio = string.IsNullOrWhiteSpace(inputModel.Bio) ? null : inputModel.Bio.Trim(),
+            ExperienceLevel = experienceLevel,
             IsApproved = false
         };
 
-        var skills = await dbContext.Skills
-            .Where(s => inputModel.SelectedSkillIds.Contains(s.Id))
-            .ToListAsync();
-
-        foreach (var skill in skills)
+        foreach (var skill in selectedSkills)
         {
             volunteerProfile.Skills.Add(skill);
         }

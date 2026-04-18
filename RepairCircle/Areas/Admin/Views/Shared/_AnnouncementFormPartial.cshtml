@@ -3,12 +3,12 @@
 <div class="form-grid">
     <div class="form-field form-field-wide">
         <label asp-for="Title"></label>
-        <input asp-for="Title" />
+        <input asp-for="Title" placeholder="Example: Saturday workshop schedule update" />
         <span asp-validation-for="Title"></span>
     </div>
     <div class="form-field form-field-wide">
         <label asp-for="Content"></label>
-        <textarea asp-for="Content"></textarea>
+        <textarea asp-for="Content" placeholder="Write the full announcement that users will see on the public site."></textarea>
         <span asp-validation-for="Content"></span>
     </div>
     <div class="form-field checkbox-field">

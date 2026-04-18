@@ -53,7 +53,7 @@ public class FeedbackService : IFeedbackService
             UserId = userId,
             RepairRequestId = inputModel.RepairRequestId,
             Rating = inputModel.Rating,
-            Comment = inputModel.Comment
+            Comment = inputModel.Comment.Trim()
         };
 
         await dbContext.Feedbacks.AddAsync(feedback);
@@ -91,7 +91,7 @@ public class FeedbackService : IFeedbackService
         }
 
         feedback.Rating = inputModel.Rating;
-        feedback.Comment = inputModel.Comment;
+        feedback.Comment = inputModel.Comment.Trim();
         feedback.ModifiedOn = DateTime.UtcNow;
         await dbContext.SaveChangesAsync();
         return true;

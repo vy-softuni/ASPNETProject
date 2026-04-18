@@ -49,6 +49,8 @@ public class ToolsController : Controller
 
         await dbContext.Tools.AddAsync(model);
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Tool created successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -97,6 +99,8 @@ public class ToolsController : Controller
         tool.ModifiedOn = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Tool updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -111,6 +115,8 @@ public class ToolsController : Controller
             await dbContext.SaveChangesAsync();
         }
 
+        TempData["StatusMessage"] = "Tool deleted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 

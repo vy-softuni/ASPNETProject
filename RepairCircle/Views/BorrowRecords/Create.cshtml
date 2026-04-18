@@ -32,7 +32,7 @@
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
             <div class="form-field">
                 <label asp-for="Input.DueDate">Preferred due date</label>
-                <input asp-for="Input.DueDate" type="date" />
+                <input asp-for="Input.DueDate" type="date" min="@DateTime.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="Input.DueDate"></span>
             </div>
 

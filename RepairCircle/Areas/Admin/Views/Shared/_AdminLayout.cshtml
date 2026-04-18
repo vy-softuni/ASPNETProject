@@ -42,7 +42,8 @@
             </header>
 
             <main class="admin-content">
-                @RenderBody()
+                <partial name="~/Views/Shared/_StatusMessage.cshtml" />
+        @RenderBody()
             </main>
         </div>
     </div>

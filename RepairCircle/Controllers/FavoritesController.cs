@@ -38,6 +38,8 @@ public class FavoritesController : Controller
         }
 
         await favoriteService.AddAsync(userId, toolId);
+        TempData["StatusMessage"] = "Tool added to favorites.";
+        TempData["StatusType"] = "success";
         return RedirectToAction("Details", "Tools", new { id = toolId });
     }
 
@@ -52,6 +54,8 @@ public class FavoritesController : Controller
         }
 
         await favoriteService.RemoveAsync(userId, toolId);
+        TempData["StatusMessage"] = "Tool removed from favorites.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 }

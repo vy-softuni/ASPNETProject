@@ -24,6 +24,7 @@
             <div class="form-field form-field-wide">
                 <label asp-for="Input.ExperienceLevel"></label>
                 <select asp-for="Input.ExperienceLevel">
+                    <option value="">Select experience level</option>
                     @foreach (var level in Model.ExperienceLevels)
                     {
                         <option value="@level">@level</option>
@@ -35,11 +36,20 @@
 
         <fieldset>
             <legend>Select skills</legend>
-            <div class="checkbox-grid">
+            <span asp-validation-for="Input.SelectedSkillIds"></span>
+            <div class="checkbox-grid top-margin">
                 @foreach (var skill in Model.Skills)
                 {
+                    var isChecked = Model.Input.SelectedSkillIds.Contains(skill.Id);
                     <label class="checkbox-option">
-                        <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" />
+                        @if (isChecked)
+                        {
+                            <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" checked="checked" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" />
+                        }
                         <span>@skill.Name</span>
                     </label>
                 }

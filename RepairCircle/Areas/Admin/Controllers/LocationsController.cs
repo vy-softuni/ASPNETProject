@@ -42,6 +42,8 @@ public class LocationsController : Controller
 
         await dbContext.Locations.AddAsync(model);
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Location created successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -86,6 +88,8 @@ public class LocationsController : Controller
         location.ModifiedOn = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Location updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -100,6 +104,8 @@ public class LocationsController : Controller
             await dbContext.SaveChangesAsync();
         }
 
+        TempData["StatusMessage"] = "Location deleted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 }

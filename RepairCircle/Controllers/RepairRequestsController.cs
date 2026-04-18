@@ -73,6 +73,16 @@ public class RepairRequestsController : Controller
         }
 
         var repairRequestId = await repairRequestService.CreateAsync(model.Input, userId);
+        if (repairRequestId == 0)
+        {
+            ModelState.AddModelError(string.Empty, "The repair request could not be created. Please verify the selected location and repair session.");
+            var refreshedModel = await repairRequestService.GetCreateModelAsync();
+            refreshedModel.Input = model.Input;
+            return View(refreshedModel);
+        }
+
+        TempData["StatusMessage"] = "Repair request submitted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Details), new { id = repairRequestId });
     }
 }

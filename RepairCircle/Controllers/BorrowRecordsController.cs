@@ -76,6 +76,8 @@ public class BorrowRecordsController : Controller
             return View(refreshedModel);
         }
 
+        TempData["StatusMessage"] = "Borrowing request submitted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(MyRecords));
     }
 }

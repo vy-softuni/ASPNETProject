@@ -41,6 +41,8 @@ public class AnnouncementsController : Controller
 
         await dbContext.Announcements.AddAsync(model);
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Announcement created successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -83,6 +85,8 @@ public class AnnouncementsController : Controller
         announcement.ModifiedOn = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Announcement updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -97,6 +101,8 @@ public class AnnouncementsController : Controller
             await dbContext.SaveChangesAsync();
         }
 
+        TempData["StatusMessage"] = "Announcement deleted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 }

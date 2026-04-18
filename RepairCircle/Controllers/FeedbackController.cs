@@ -64,6 +64,8 @@ public class FeedbackController : Controller
             return View(refreshedModel);
         }
 
+        TempData["StatusMessage"] = "Feedback saved successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction("Details", "RepairRequests", new { id = model.Input.RepairRequestId });
     }
 
@@ -106,6 +108,8 @@ public class FeedbackController : Controller
             return NotFound();
         }
 
+        TempData["StatusMessage"] = "Feedback updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction("Details", "RepairRequests", new { id = model.Input.RepairRequestId });
     }
 
@@ -120,6 +124,8 @@ public class FeedbackController : Controller
         }
 
         await feedbackService.DeleteAsync(userId, id);
+        TempData["StatusMessage"] = "Feedback deleted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction("Details", "RepairRequests", new { id = repairRequestId });
     }
 }

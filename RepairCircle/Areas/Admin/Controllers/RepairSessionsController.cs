@@ -54,6 +54,8 @@ public class RepairSessionsController : Controller
 
         await dbContext.RepairSessions.AddAsync(model);
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Repair session created successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -101,6 +103,8 @@ public class RepairSessionsController : Controller
         session.ModifiedOn = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Repair session updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 
@@ -115,6 +119,8 @@ public class RepairSessionsController : Controller
             await dbContext.SaveChangesAsync();
         }
 
+        TempData["StatusMessage"] = "Repair session deleted successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 

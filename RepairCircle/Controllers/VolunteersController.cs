@@ -47,7 +47,17 @@ public class VolunteersController : Controller
             return Challenge();
         }
 
-        await volunteerService.BecomeVolunteerAsync(userId, model.Input);
+        var volunteerProfileId = await volunteerService.BecomeVolunteerAsync(userId, model.Input);
+        if (volunteerProfileId == 0)
+        {
+            ModelState.AddModelError(string.Empty, "The volunteer profile could not be submitted. Please check the selected experience level and skills.");
+            var refreshedModel = await volunteerService.GetBecomeViewModelAsync();
+            refreshedModel.Input = model.Input;
+            return View(refreshedModel);
+        }
+
+        TempData["StatusMessage"] = "Volunteer profile submitted successfully. An administrator will review it.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
 }

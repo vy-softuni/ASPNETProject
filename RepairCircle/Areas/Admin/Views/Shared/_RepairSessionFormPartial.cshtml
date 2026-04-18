@@ -3,12 +3,12 @@
 <div class="form-grid">
     <div class="form-field form-field-wide">
         <label asp-for="Title"></label>
-        <input asp-for="Title" />
+        <input asp-for="Title" placeholder="Example: Weekend electronics diagnostics session" />
         <span asp-validation-for="Title"></span>
     </div>
     <div class="form-field form-field-wide">
         <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
+        <textarea asp-for="Description" placeholder="Describe the purpose of the session, supported repair types, and participation notes."></textarea>
         <span asp-validation-for="Description"></span>
     </div>
     <div class="form-field">
@@ -23,16 +23,16 @@
     </div>
     <div class="form-field">
         <label asp-for="MaxParticipants"></label>
-        <input asp-for="MaxParticipants" type="number" />
+        <input asp-for="MaxParticipants" type="number" min="1" />
         <span asp-validation-for="MaxParticipants"></span>
     </div>
     <div class="form-field">
         <label asp-for="AvailableSlots"></label>
-        <input asp-for="AvailableSlots" type="number" />
+        <input asp-for="AvailableSlots" type="number" min="0" />
         <span asp-validation-for="AvailableSlots"></span>
     </div>
     <div class="form-field form-field-wide">
-        <label asp-for="LocationId">Location</label>
+        <label asp-for="LocationId"></label>
         <select asp-for="LocationId" asp-items="ViewBag.Locations"></select>
         <span asp-validation-for="LocationId"></span>
     </div>

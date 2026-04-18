@@ -116,12 +116,27 @@ public class RepairRequestService : IRepairRequestService
 
     public async Task<int> CreateAsync(RepairRequestCreateInputModel model, string userId)
     {
+        var locationExists = await dbContext.Locations.AnyAsync(l => l.Id == model.LocationId);
+        if (!locationExists)
+        {
+            return 0;
+        }
+
+        if (model.RepairSessionId.HasValue)
+        {
+            var sessionExists = await dbContext.RepairSessions.AnyAsync(rs => rs.Id == model.RepairSessionId.Value);
+            if (!sessionExists)
+            {
+                return 0;
+            }
+        }
+
         var repairRequest = new RepairRequest
         {
-            Title = model.Title,
-            Description = model.Description,
-            ItemType = model.ItemType,
-            ImageUrl = model.ImageUrl,
+            Title = model.Title.Trim(),
+            Description = model.Description.Trim(),
+            ItemType = model.ItemType.Trim(),
+            ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim(),
             SubmittedByUserId = userId,
             LocationId = model.LocationId,
             RepairSessionId = model.RepairSessionId,

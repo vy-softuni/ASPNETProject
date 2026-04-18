@@ -67,12 +67,14 @@ public class BorrowRecordService : IBorrowRecordService
             return 0;
         }
 
+        var dueDate = DateTime.SpecifyKind(model.DueDate, DateTimeKind.Utc);
+
         var record = new BorrowRecord
         {
             ToolId = model.ToolId,
             UserId = userId,
             BorrowDate = DateTime.UtcNow,
-            DueDate = model.DueDate.ToUniversalTime(),
+            DueDate = dueDate,
             Status = BorrowStatus.Pending,
             BorrowReference = $"BOR-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}"
         };

@@ -60,10 +60,47 @@ public class RepairRequestsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int id, int? assignedVolunteerProfileId, int? repairSessionId, RepairRequestStatus status)
     {
-        var request = await dbContext.RepairRequests.FirstOrDefaultAsync(r => r.Id == id);
+        var request = await dbContext.RepairRequests
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .Include(r => r.RepairSession)
+            .Include(r => r.Feedbacks)
+                .ThenInclude(f => f.User)
+            .FirstOrDefaultAsync(r => r.Id == id);
         if (request is null)
         {
             return NotFound();
+        }
+
+        if (assignedVolunteerProfileId.HasValue)
+        {
+            var volunteerExists = await dbContext.VolunteerProfiles
+                .AnyAsync(v => v.Id == assignedVolunteerProfileId.Value && v.IsApproved);
+            if (!volunteerExists)
+            {
+                ModelState.AddModelError(string.Empty, "The selected volunteer is invalid or not approved.");
+            }
+        }
+
+        if (repairSessionId.HasValue)
+        {
+            var sessionExists = await dbContext.RepairSessions
+                .AnyAsync(rs => rs.Id == repairSessionId.Value);
+            if (!sessionExists)
+            {
+                ModelState.AddModelError(string.Empty, "The selected repair session does not exist.");
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await PopulateLookupsAsync(assignedVolunteerProfileId, repairSessionId, status);
+            request.AssignedVolunteerProfileId = assignedVolunteerProfileId;
+            request.RepairSessionId = repairSessionId;
+            request.Status = status;
+            return View(nameof(Details), request);
         }
 
         request.AssignedVolunteerProfileId = assignedVolunteerProfileId;
@@ -72,6 +109,8 @@ public class RepairRequestsController : Controller
         request.ModifiedOn = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Repair request updated successfully.";
+        TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Details), new { id });
     }
 

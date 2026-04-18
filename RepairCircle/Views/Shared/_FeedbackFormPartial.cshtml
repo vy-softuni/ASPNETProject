@@ -7,6 +7,7 @@
     <div class="form-field">
         <label asp-for="Input.Rating"></label>
         <input asp-for="Input.Rating" type="number" min="1" max="5" />
+        <small class="form-hint">Use whole numbers from 1 to 5.</small>
         <span asp-validation-for="Input.Rating"></span>
     </div>
     <div class="form-field form-field-wide">
