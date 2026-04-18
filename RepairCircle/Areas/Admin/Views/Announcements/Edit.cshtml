@@ -1,24 +1,16 @@
 @model Announcement
-@{ ViewData["Title"] = "Edit Announcement"; }
-@model Announcement
+@{
+    ViewData["Title"] = "Edit Announcement";
+}
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
 <section class="card">
-    <h1>@ViewData["Title"]</h1>
+    <h1>Edit announcement</h1>
     <form method="post">
+        @Html.AntiForgeryToken()
         <input asp-for="Id" type="hidden" />
-        <label asp-for="Title"></label>
-        <input asp-for="Title" />
-        <span asp-validation-for="Title"></span>
-
-        <label asp-for="Content"></label>
-        <textarea asp-for="Content"></textarea>
-        <span asp-validation-for="Content"></span>
-
-        <label><input asp-for="IsImportant" /> Important</label>
-        <label><input asp-for="IsPublished" /> Published</label>
-
+        <partial name="~/Areas/Admin/Views/Shared/_AnnouncementFormPartial.cshtml" model="Model" />
         <div class="actions">
-            <button type="submit">Save</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
             <a class="btn btn-secondary" asp-action="Index">Back</a>
         </div>
     </form>

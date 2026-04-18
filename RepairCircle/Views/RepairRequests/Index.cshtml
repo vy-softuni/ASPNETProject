@@ -1,24 +1,27 @@
 @model RepairRequestIndexViewModel
 @{
-    ViewData["Title"] = "Repair Requests";
+    ViewData["Title"] = ViewData["Title"] as string ?? "Repair Requests";
 }
 
-<section class="card">
-    <h1>Repair Requests</h1>
-    <p>Community-submitted repair requests.</p>
+<section class="page-header card">
+    <span class="eyebrow">Repair workflow</span>
+    <h1>@ViewData["Title"]</h1>
+    <p>Browse submitted requests and review their current assignment and status.</p>
 </section>
 
-<section class="grid grid-2">
-    @foreach (var request in Model.Requests)
-    {
-        <article class="card">
-            <h2>@request.Title</h2>
-            <p><strong>Item type:</strong> @request.ItemType</p>
-            <p><strong>Status:</strong> @request.Status</p>
-            <p><strong>Submitted by:</strong> @request.SubmittedBy</p>
-            <p><strong>Volunteer:</strong> @(request.AssignedVolunteer ?? "Not assigned")</p>
-            <p><strong>Location:</strong> @request.LocationName</p>
-            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@request.Id">Details</a>
-        </article>
-    }
-</section>
+@if (!Model.Requests.Any())
+{
+    <section class="empty-state">
+        <h2>No repair requests found</h2>
+        <p>New requests will appear here once users start submitting them.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-2">
+        @foreach (var request in Model.Requests)
+        {
+            <partial name="_RepairRequestCardPartial" model="request" />
+        }
+    </section>
+}

@@ -1,0 +1,20 @@
+@model Announcement
+<div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+<div class="form-grid">
+    <div class="form-field form-field-wide">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" />
+        <span asp-validation-for="Title"></span>
+    </div>
+    <div class="form-field form-field-wide">
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content"></textarea>
+        <span asp-validation-for="Content"></span>
+    </div>
+    <div class="form-field checkbox-field">
+        <label class="checkbox-label"><input asp-for="IsImportant" /> Mark as important</label>
+    </div>
+    <div class="form-field checkbox-field">
+        <label class="checkbox-label"><input asp-for="IsPublished" /> Published</label>
+    </div>
+</div>

@@ -4,32 +4,35 @@
 }
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
 
-<section class="card">
-    <h1>Admin Dashboard</h1>
-    <div class="grid grid-3">
-        <article class="card">
-            <h2>Total tools</h2>
-            <p>@Model.ToolsCount</p>
-        </article>
-        <article class="card">
-            <h2>Available tools</h2>
-            <p>@Model.AvailableToolsCount</p>
-        </article>
-        <article class="card">
-            <h2>Repair requests</h2>
-            <p>@Model.RepairRequestsCount</p>
-        </article>
-        <article class="card">
-            <h2>Pending borrowings</h2>
-            <p>@Model.PendingBorrowRecordsCount</p>
-        </article>
-        <article class="card">
-            <h2>Approved volunteers</h2>
-            <p>@Model.ApprovedVolunteersCount</p>
-        </article>
-        <article class="card">
-            <h2>Upcoming sessions</h2>
-            <p>@Model.UpcomingSessionsCount</p>
-        </article>
-    </div>
+<section class="page-header card admin-page-header">
+    <span class="eyebrow">Administration</span>
+    <h1>Dashboard</h1>
+    <p>Use this area to manage content, requests, locations, and repair activity.</p>
+</section>
+
+<section class="grid grid-3">
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.ToolsCount</span>
+        <span class="stat-label">Total tools</span>
+    </article>
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.AvailableToolsCount</span>
+        <span class="stat-label">Available tools</span>
+    </article>
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.RepairRequestsCount</span>
+        <span class="stat-label">Repair requests</span>
+    </article>
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.PendingBorrowRecordsCount</span>
+        <span class="stat-label">Pending borrowings</span>
+    </article>
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.ApprovedVolunteersCount</span>
+        <span class="stat-label">Approved volunteers</span>
+    </article>
+    <article class="card stat-box admin-stat">
+        <span class="stat-number">@Model.UpcomingSessionsCount</span>
+        <span class="stat-label">Upcoming sessions</span>
+    </article>
 </section>

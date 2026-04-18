@@ -2,8 +2,36 @@
     ViewData["Title"] = "Contact";
 }
 
-<section class="card">
-    <h1>Contact</h1>
-    <p>Email: hello@repaircircle.local</p>
-    <p>Phone: +359 000 000 000</p>
+<section class="page-header card">
+    <span class="eyebrow">Get in touch</span>
+    <h1>Contact RepairCircle</h1>
+    <p>This page can later be connected to a real contact form or support workflow.</p>
+</section>
+
+<section class="grid grid-2">
+    <article class="card">
+        <h2>General support</h2>
+        <dl class="meta-list">
+            <div>
+                <dt>Email</dt>
+                <dd>hello@repaircircle.local</dd>
+            </div>
+            <div>
+                <dt>Phone</dt>
+                <dd>+359 000 000 000</dd>
+            </div>
+            <div>
+                <dt>Office hours</dt>
+                <dd>Monday – Friday, 09:00 – 18:00</dd>
+            </div>
+        </dl>
+    </article>
+    <article class="card">
+        <h2>Community workshops</h2>
+        <p>Workshop addresses, maps, and event calendars will later be displayed here as part of the location bonus functionality.</p>
+        <div class="actions">
+            <a class="btn btn-secondary" asp-controller="RepairSessions" asp-action="Index">View repair sessions</a>
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse tools</a>
+        </div>
+    </article>
 </section>

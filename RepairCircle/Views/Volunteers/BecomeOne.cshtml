@@ -3,42 +3,53 @@
     ViewData["Title"] = "Become a Volunteer";
 }
 
-<section class="card">
-    <h1>Become a Volunteer</h1>
+<section class="page-header card">
+    <span class="eyebrow">Volunteer registration</span>
+    <h1>Become a volunteer</h1>
+    <p>Tell us about your experience and choose the skills you would like to offer.</p>
+</section>
 
+<section class="card">
     <form asp-action="BecomeOne" method="post">
         @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-        <div>
-            <label asp-for="Input.Bio"></label>
-            <textarea asp-for="Input.Bio"></textarea>
-            <span asp-validation-for="Input.Bio"></span>
-        </div>
+        <div class="form-grid">
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.Bio"></label>
+                <textarea asp-for="Input.Bio" placeholder="Describe your background, practical experience, and the types of repairs you enjoy."></textarea>
+                <span asp-validation-for="Input.Bio"></span>
+            </div>
 
-        <div>
-            <label asp-for="Input.ExperienceLevel"></label>
-            <select asp-for="Input.ExperienceLevel">
-                @foreach (var level in Model.ExperienceLevels)
-                {
-                    <option value="@level">@level</option>
-                }
-            </select>
-            <span asp-validation-for="Input.ExperienceLevel"></span>
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.ExperienceLevel"></label>
+                <select asp-for="Input.ExperienceLevel">
+                    @foreach (var level in Model.ExperienceLevels)
+                    {
+                        <option value="@level">@level</option>
+                    }
+                </select>
+                <span asp-validation-for="Input.ExperienceLevel"></span>
+            </div>
         </div>
 
         <fieldset>
             <legend>Select skills</legend>
-            @foreach (var skill in Model.Skills)
-            {
-                <label>
-                    <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" /> @skill.Name
-                </label>
-
-                <br />
-            }
+            <div class="checkbox-grid">
+                @foreach (var skill in Model.Skills)
+                {
+                    <label class="checkbox-option">
+                        <input type="checkbox" name="Input.SelectedSkillIds" value="@skill.Id" />
+                        <span>@skill.Name</span>
+                    </label>
+                }
+            </div>
         </fieldset>
 
-        <button class="btn btn-primary" type="submit">Submit volunteer profile</button>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Submit volunteer profile</button>
+            <a class="btn btn-secondary" asp-controller="Volunteers" asp-action="Index">Back to volunteers</a>
+        </div>
     </form>
 </section>
 

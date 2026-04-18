@@ -3,42 +3,59 @@
     ViewData["Title"] = "Repair Request Details";
 }
 
-<section class="card">
-    <h1>@Model.Title</h1>
-    <p>@Model.Description</p>
-    <p><strong>Item type:</strong> @Model.ItemType</p>
-    <p><strong>Status:</strong> @Model.Status</p>
-    <p><strong>Submitted by:</strong> @Model.SubmittedBy</p>
-    <p><strong>Assigned volunteer:</strong> @(Model.AssignedVolunteer ?? "Not assigned")</p>
-    <p><strong>Location:</strong> @Model.LocationName, @Model.City</p>
-    <p><strong>Repair session:</strong> @(Model.RepairSessionTitle ?? "Independent request")</p>
-    <p><strong>Requested on:</strong> @Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
-
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <div class="actions">
-            <a class="btn btn-primary" asp-controller="Feedback" asp-action="Create" asp-route-repairRequestId="@Model.Id">Leave feedback</a>
-            <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="MyRequests">My requests</a>
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <div class="item-card-topline">
+            <span class="badge">@Model.ItemType</span>
+            <span class="status-badge">@Model.Status</span>
         </div>
-    }
+        <h1>@Model.Title</h1>
+        <p class="lead">@Model.Description</p>
+
+        <dl class="meta-list">
+            <div>
+                <dt>Submitted by</dt>
+                <dd>@Model.SubmittedBy</dd>
+            </div>
+            <div>
+                <dt>Volunteer</dt>
+                <dd>@(Model.AssignedVolunteer ?? "Not assigned yet")</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.LocationName, @Model.City</dd>
+            </div>
+            <div>
+                <dt>Repair session</dt>
+                <dd>@(Model.RepairSessionTitle ?? "Independent request")</dd>
+            </div>
+            <div>
+                <dt>Requested on</dt>
+                <dd>@Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+            </div>
+        </dl>
+
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="actions">
+                <a class="btn btn-primary" asp-controller="Feedback" asp-action="Create" asp-route-repairRequestId="@Model.Id">Leave feedback</a>
+                <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="MyRequests">My requests</a>
+            </div>
+        }
+    </article>
+
+    <aside class="card detail-sidebar">
+        <h2>Repair lifecycle</h2>
+        <ol class="plain-list numbered-list">
+            <li>Request submitted by the user.</li>
+            <li>Volunteer or admin reviews the issue.</li>
+            <li>Request may be linked to a repair session.</li>
+            <li>User can leave feedback after completion.</li>
+        </ol>
+    </aside>
 </section>
 
-<section class="card">
+<section class="card top-margin">
     <h2>Feedback</h2>
-    @if (!Model.Feedback.Any())
-    {
-        <p>No feedback yet.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var feedback in Model.Feedback)
-            {
-                <li>
-                    <strong>@feedback.UserName</strong> - Rating: @feedback.Rating/5<br />
-                    @feedback.Comment
-                </li>
-            }
-        </ul>
-    }
+    <partial name="_FeedbackListPartial" model="Model.Feedback" />
 </section>

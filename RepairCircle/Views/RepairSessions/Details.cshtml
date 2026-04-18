@@ -3,44 +3,68 @@
     ViewData["Title"] = "Repair Session Details";
 }
 
-<section class="card">
-    <h1>@Model.Title</h1>
-    <p>@Model.Description</p>
-    <p><strong>When:</strong> @Model.StartDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm") - @Model.EndDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
-    <p><strong>Slots:</strong> @Model.AvailableSlots / @Model.MaxParticipants</p>
-    <p><strong>Location:</strong> @Model.LocationName, @Model.Address, @Model.City</p>
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <div class="item-card-topline">
+            <span class="badge">@Model.LocationName</span>
+            <span class="status-badge status-info">@Model.AvailableSlots / @Model.MaxParticipants slots</span>
+        </div>
+        <h1>@Model.Title</h1>
+        <p class="lead">@Model.Description</p>
+        <dl class="meta-list">
+            <div>
+                <dt>Starts</dt>
+                <dd>@Model.StartDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+            </div>
+            <div>
+                <dt>Ends</dt>
+                <dd>@Model.EndDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.Address, @Model.City</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="card detail-sidebar">
+        <h2>Session planning</h2>
+        <p>Each repair session can be linked to volunteers and open repair requests so the workshop can prepare tools and assignments in advance.</p>
+    </aside>
 </section>
 
-<section class="card">
-    <h2>Volunteers</h2>
-    @if (!Model.VolunteerNames.Any())
-    {
-        <p>No volunteers assigned yet.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var volunteerName in Model.VolunteerNames)
-            {
-                <li>@volunteerName</li>
-            }
-        </ul>
-    }
-</section>
+<section class="grid grid-2 top-margin">
+    <article class="card">
+        <h2>Volunteers</h2>
+        @if (!Model.VolunteerNames.Any())
+        {
+            <p class="muted">No volunteers assigned yet.</p>
+        }
+        else
+        {
+            <ul class="plain-list">
+                @foreach (var volunteerName in Model.VolunteerNames)
+                {
+                    <li>@volunteerName</li>
+                }
+            </ul>
+        }
+    </article>
 
-<section class="card">
-    <h2>Linked repair requests</h2>
-    @if (!Model.RepairRequestTitles.Any())
-    {
-        <p>No repair requests linked to this session yet.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var requestTitle in Model.RepairRequestTitles)
-            {
-                <li>@requestTitle</li>
-            }
-        </ul>
-    }
+    <article class="card">
+        <h2>Linked repair requests</h2>
+        @if (!Model.RepairRequestTitles.Any())
+        {
+            <p class="muted">No repair requests linked yet.</p>
+        }
+        else
+        {
+            <ul class="plain-list">
+                @foreach (var requestTitle in Model.RepairRequestTitles)
+                {
+                    <li>@requestTitle</li>
+                }
+            </ul>
+        }
+    </article>
 </section>

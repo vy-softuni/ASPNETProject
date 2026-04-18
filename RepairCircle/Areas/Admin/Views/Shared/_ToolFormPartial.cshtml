@@ -1,0 +1,49 @@
+@model Tool
+<div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+<div class="form-grid">
+    <div class="form-field form-field-wide">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-field form-field-wide">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+        <span asp-validation-for="Description"></span>
+    </div>
+
+    <div class="form-field form-field-wide">
+        <label asp-for="ImageUrl"></label>
+        <input asp-for="ImageUrl" placeholder="Optional image URL" />
+        <span asp-validation-for="ImageUrl"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Condition"></label>
+        <select asp-for="Condition" asp-items="Html.GetEnumSelectList<RepairCircle.Data.Enums.ToolCondition>()"></select>
+        <span asp-validation-for="Condition"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Quantity"></label>
+        <input asp-for="Quantity" type="number" />
+        <span asp-validation-for="Quantity"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="ToolCategoryId">Category</label>
+        <select asp-for="ToolCategoryId" asp-items="ViewBag.ToolCategories"></select>
+        <span asp-validation-for="ToolCategoryId"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="LocationId">Location</label>
+        <select asp-for="LocationId" asp-items="ViewBag.Locations"></select>
+        <span asp-validation-for="LocationId"></span>
+    </div>
+
+    <div class="form-field checkbox-field">
+        <label class="checkbox-label"><input asp-for="IsAvailable" /> Available for borrowing</label>
+    </div>
+</div>

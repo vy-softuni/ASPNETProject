@@ -1,0 +1,24 @@
+@model IReadOnlyCollection<RepairRequestFeedbackViewModel>
+@if (!Model.Any())
+{
+    <div class="empty-state compact-empty">
+        <h3>No feedback yet</h3>
+        <p>Feedback from users will appear here once a repair is completed.</p>
+    </div>
+}
+else
+{
+    <div class="stack-list">
+        @foreach (var feedback in Model.OrderByDescending(f => f.CreatedOn))
+        {
+            <article class="card feedback-card">
+                <div class="item-card-topline">
+                    <strong>@feedback.UserName</strong>
+                    <span class="status-badge status-info">@feedback.Rating / 5</span>
+                </div>
+                <p>@feedback.Comment</p>
+                <p class="muted small-text">@feedback.CreatedOn.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+            </article>
+        }
+    </div>
+}

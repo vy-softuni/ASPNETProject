@@ -3,31 +3,69 @@
     ViewData["Title"] = "Tool Details";
 }
 
-<section class="card">
-    <h1>@Model.Name</h1>
-    <p>@Model.Description</p>
-    <p><strong>Category:</strong> @Model.CategoryName</p>
-    <p><strong>Condition:</strong> @Model.Condition</p>
-    <p><strong>Status:</strong> @(Model.IsAvailable ? "Available" : "Unavailable")</p>
-    <p><strong>Quantity:</strong> @Model.Quantity</p>
-    <p><strong>Location:</strong> @Model.LocationName, @Model.Address, @Model.City</p>
-    <p><strong>Favorites:</strong> @Model.FavoritesCount</p>
-    <p><strong>Borrow records:</strong> @Model.BorrowRecordsCount</p>
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <div class="item-card-topline">
+            <span class="badge">@Model.CategoryName</span>
+            <span class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
+        </div>
+        <h1>@Model.Name</h1>
+        <p class="lead">@Model.Description</p>
 
-    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
-    {
-        <p><strong>Map coordinates:</strong> @Model.Latitude, @Model.Longitude</p>
-    }
+        <dl class="meta-list">
+            <div>
+                <dt>Condition</dt>
+                <dd>@Model.Condition</dd>
+            </div>
+            <div>
+                <dt>Quantity</dt>
+                <dd>@Model.Quantity</dd>
+            </div>
+            <div>
+                <dt>Favorites</dt>
+                <dd>@Model.FavoritesCount</dd>
+            </div>
+            <div>
+                <dt>Borrow records</dt>
+                <dd>@Model.BorrowRecordsCount</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.LocationName, @Model.City</dd>
+            </div>
+            <div>
+                <dt>Address</dt>
+                <dd>@Model.Address</dd>
+            </div>
+        </dl>
 
-    <div class="actions">
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
         {
-            <a class="btn btn-primary" asp-controller="BorrowRecords" asp-action="Create" asp-route-toolId="@Model.Id">Borrow this tool</a>
-            <form asp-controller="Favorites" asp-action="Add" method="post" class="inline-form">
-                <input type="hidden" name="toolId" value="@Model.Id" />
-                <button type="submit">Add to favorites</button>
-            </form>
+            <div class="map-note">
+                <strong>Coordinates:</strong> @Model.Latitude, @Model.Longitude
+            </div>
         }
-        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Back to tools</a>
-    </div>
+
+        <div class="actions">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="btn btn-primary" asp-controller="BorrowRecords" asp-action="Create" asp-route-toolId="@Model.Id">Borrow this tool</a>
+                <form asp-controller="Favorites" asp-action="Add" method="post" class="inline-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="toolId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-secondary">Add to favorites</button>
+                </form>
+            }
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Back to tools</a>
+        </div>
+    </article>
+
+    <aside class="card detail-sidebar">
+        <h2>Borrowing guidance</h2>
+        <ul>
+            <li>Pick up the tool from the listed location.</li>
+            <li>Choose a due date when creating the borrowing record.</li>
+            <li>Availability depends on the current quantity and approval workflow.</li>
+        </ul>
+    </aside>
 </section>

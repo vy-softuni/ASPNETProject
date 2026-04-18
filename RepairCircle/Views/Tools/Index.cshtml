@@ -3,14 +3,19 @@
     ViewData["Title"] = "Tools";
 }
 
-<section class="card">
-    <h1>Tools</h1>
-    <form method="get" class="grid grid-3">
-        <div>
+<section class="page-header card">
+    <span class="eyebrow">Tool inventory</span>
+    <h1>Browse available tools</h1>
+    <p>Search by name and narrow the results by category, location, and availability.</p>
+</section>
+
+<section class="card filter-card">
+    <form method="get" class="form-grid filter-grid">
+        <div class="form-field">
             <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" />
+            <input asp-for="SearchTerm" placeholder="Drill, sewing machine, bike stand..." />
         </div>
-        <div>
+        <div class="form-field">
             <label asp-for="CategoryId">Category</label>
             <select asp-for="CategoryId">
                 <option value="">All categories</option>
@@ -20,7 +25,7 @@
                 }
             </select>
         </div>
-        <div>
+        <div class="form-field">
             <label asp-for="LocationId">Location</label>
             <select asp-for="LocationId">
                 <option value="">All locations</option>
@@ -30,29 +35,32 @@
                 }
             </select>
         </div>
-        <div>
-            <label>
-                <input asp-for="OnlyAvailable" type="checkbox" value="true" /> Only available
+        <div class="form-field checkbox-field">
+            <label class="checkbox-label">
+                <input asp-for="OnlyAvailable" type="checkbox" value="true" />
+                Show only available tools
             </label>
         </div>
-        <div>
-            <button class="btn btn-primary" type="submit">Filter</button>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-secondary" asp-action="Index">Clear</a>
         </div>
     </form>
 </section>
 
-<section class="grid grid-3">
-    @foreach (var tool in Model.Tools)
-    {
-        <article class="card">
-            <h2>@tool.Name</h2>
-            <p>@tool.Description</p>
-            <p><strong>Category:</strong> @tool.CategoryName</p>
-            <p><strong>Location:</strong> @tool.LocationName, @tool.City</p>
-            <p><strong>Condition:</strong> @tool.Condition</p>
-            <p><strong>Quantity:</strong> @tool.Quantity</p>
-            <p><strong>Status:</strong> @(tool.IsAvailable ? "Available" : "Unavailable")</p>
-            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@tool.Id">Details</a>
-        </article>
-    }
-</section>
+@if (!Model.Tools.Any())
+{
+    <section class="empty-state">
+        <h2>No tools match the current filters</h2>
+        <p>Try broadening the search or removing some filters.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-3">
+        @foreach (var tool in Model.Tools)
+        {
+            <partial name="_ToolCardPartial" model="tool" />
+        }
+    </section>
+}

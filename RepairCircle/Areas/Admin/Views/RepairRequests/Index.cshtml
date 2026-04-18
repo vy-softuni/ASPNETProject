@@ -3,21 +3,27 @@
     ViewData["Title"] = "Admin Repair Requests";
 }
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
-<section class="card">
-    <h1>Repair Requests</h1>
+<section class="card table-card">
+    <div class="page-header-inline">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>Repair requests</h1>
+        </div>
+    </div>
     <table>
         <thead>
-            <tr><th>Title</th><th>Status</th><th>User</th><th>Volunteer</th><th>Location</th><th></th></tr>
+            <tr><th>Title</th><th>Status</th><th>Submitted by</th><th>Volunteer</th><th>Location</th><th>Requested</th><th></th></tr>
         </thead>
         <tbody>
         @foreach (var request in Model)
         {
             <tr>
                 <td>@request.Title</td>
-                <td>@request.Status</td>
+                <td><span class="status-badge">@request.Status</span></td>
                 <td>@(request.SubmittedByUser.FullName ?? request.SubmittedByUser.Email)</td>
-                <td>@(request.AssignedVolunteerProfile?.User.FullName ?? "-")</td>
+                <td>@(request.AssignedVolunteerProfile?.User.FullName ?? request.AssignedVolunteerProfile?.User.Email ?? "Not assigned")</td>
                 <td>@request.Location.Name</td>
+                <td>@request.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
                 <td><a asp-action="Details" asp-route-id="@request.Id">Manage</a></td>
             </tr>
         }

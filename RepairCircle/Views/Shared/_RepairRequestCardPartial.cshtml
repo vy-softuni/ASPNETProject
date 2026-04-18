@@ -1,0 +1,29 @@
+@model RepairRequestListItemViewModel
+<article class="card item-card">
+    <div class="item-card-topline">
+        <span class="badge">@Model.ItemType</span>
+        <span class="status-badge">@Model.Status</span>
+    </div>
+    <h3>@Model.Title</h3>
+    <dl class="meta-list compact-meta">
+        <div>
+            <dt>Submitted by</dt>
+            <dd>@Model.SubmittedBy</dd>
+        </div>
+        <div>
+            <dt>Volunteer</dt>
+            <dd>@(Model.AssignedVolunteer ?? "Awaiting assignment")</dd>
+        </div>
+        <div>
+            <dt>Location</dt>
+            <dd>@Model.LocationName</dd>
+        </div>
+        <div>
+            <dt>Requested on</dt>
+            <dd>@Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy")</dd>
+        </div>
+    </dl>
+    <div class="actions">
+        <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="Details" asp-route-id="@Model.Id">Open request</a>
+    </div>
+</article>

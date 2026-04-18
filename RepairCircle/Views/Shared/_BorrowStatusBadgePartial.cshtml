@@ -1,0 +1,12 @@
+@model string
+@{
+    var cssClass = Model.ToLowerInvariant() switch
+    {
+        "approved" => "status-success",
+        "returned" => "status-info",
+        "overdue" => "status-danger",
+        "rejected" => "status-danger",
+        _ => "status-warning"
+    };
+}
+<span class="status-badge @cssClass">@Model</span>

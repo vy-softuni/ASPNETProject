@@ -3,14 +3,22 @@
     ViewData["Title"] = "My Borrow Records";
 }
 
-<section class="card">
-    <h1>My Borrow Records</h1>
-    @if (!Model.Any())
-    {
-        <p>You have no borrow records yet.</p>
-    }
-    else
-    {
+<section class="page-header card">
+    <span class="eyebrow">Personal history</span>
+    <h1>My borrow records</h1>
+    <p>Track active, approved, and returned tool requests from one place.</p>
+</section>
+
+@if (!Model.Any())
+{
+    <section class="empty-state">
+        <h2>No borrowing records yet</h2>
+        <p>Borrowed tools will appear here after your first request.</p>
+    </section>
+}
+else
+{
+    <section class="card table-card">
         <table>
             <thead>
                 <tr>
@@ -27,14 +35,14 @@
             {
                 <tr>
                     <td>@record.ToolName</td>
-                    <td>@record.BorrowReference</td>
+                    <td><code>@record.BorrowReference</code></td>
                     <td>@record.BorrowDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
                     <td>@record.DueDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
-                    <td>@record.Status</td>
+                    <td><partial name="_BorrowStatusBadgePartial" model="record.Status" /></td>
                     <td>@record.LocationName</td>
                 </tr>
             }
             </tbody>
         </table>
-    }
-</section>
+    </section>
+}

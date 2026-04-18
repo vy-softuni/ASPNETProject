@@ -1,9 +1,12 @@
 @{
     ViewData["Title"] = "Server Error";
 }
-
-<section class="card">
-    <h1>500 - Server error</h1>
-    <p>Something unexpected happened while processing your request.</p>
-    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to home</a>
+<section class="empty-state large-empty">
+    <div class="status-code">500</div>
+    <h1>Something went wrong</h1>
+    <p>An unexpected error occurred while processing your request.</p>
+    <div class="actions center-actions">
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Return to home</a>
+        <a class="btn btn-secondary" asp-controller="Home" asp-action="Contact">Contact support</a>
+    </div>
 </section>

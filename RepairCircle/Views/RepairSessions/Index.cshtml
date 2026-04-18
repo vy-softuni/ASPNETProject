@@ -3,21 +3,49 @@
     ViewData["Title"] = "Repair Sessions";
 }
 
-<section class="card">
-    <h1>Repair Sessions</h1>
-    <p>Upcoming community repair sessions.</p>
+<section class="page-header card">
+    <span class="eyebrow">Community events</span>
+    <h1>Upcoming repair sessions</h1>
+    <p>These sessions bring together volunteers and community members to fix common household and workshop items.</p>
 </section>
 
-<section class="grid grid-2">
-    @foreach (var session in Model)
-    {
-        <article class="card">
-            <h2>@session.Title</h2>
-            <p>@session.Description</p>
-            <p><strong>When:</strong> @session.StartDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm") - @session.EndDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
-            <p><strong>Slots:</strong> @session.AvailableSlots / @session.MaxParticipants</p>
-            <p><strong>Location:</strong> @session.LocationName, @session.City</p>
-            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@session.Id">Details</a>
-        </article>
-    }
-</section>
+@if (!Model.Any())
+{
+    <section class="empty-state">
+        <h2>No sessions planned yet</h2>
+        <p>New repair sessions will appear here once they are scheduled.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-2">
+        @foreach (var session in Model)
+        {
+            <article class="card item-card">
+                <div class="item-card-topline">
+                    <span class="badge">@session.LocationName</span>
+                    <span class="status-badge status-info">@session.AvailableSlots / @session.MaxParticipants slots</span>
+                </div>
+                <h2>@session.Title</h2>
+                <p class="clamp-3">@session.Description</p>
+                <dl class="meta-list compact-meta">
+                    <div>
+                        <dt>Starts</dt>
+                        <dd>@session.StartDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+                    </div>
+                    <div>
+                        <dt>Ends</dt>
+                        <dd>@session.EndDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+                    </div>
+                    <div>
+                        <dt>City</dt>
+                        <dd>@session.City</dd>
+                    </div>
+                </dl>
+                <div class="actions">
+                    <a class="btn btn-secondary" asp-action="Details" asp-route-id="@session.Id">View details</a>
+                </div>
+            </article>
+        }
+    </section>
+}

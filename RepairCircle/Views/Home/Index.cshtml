@@ -3,60 +3,95 @@
     ViewData["Title"] = "Home";
 }
 
-<section class="hero">
+<section class="hero hero-split">
     <div>
         <span class="eyebrow">Community repair and tool sharing</span>
-        <h1>Welcome to RepairCircle</h1>
-        <p>RepairCircle helps communities fix broken items, borrow tools, and connect with volunteers who can help.</p>
+        <h1>Repair more. Waste less. Help each other.</h1>
+        <p class="lead">RepairCircle connects residents, volunteers, and community workshops so broken items get fixed and useful tools keep circulating.</p>
         <div class="actions">
-            <a class="btn btn-primary" asp-controller="RepairRequests" asp-action="Create">Submit a Repair Request</a>
-            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse Tools</a>
+            <a class="btn btn-primary" asp-controller="RepairRequests" asp-action="Create">Submit a repair request</a>
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse tools</a>
+            <a class="btn btn-secondary" asp-controller="Volunteers" asp-action="BecomeOne">Become a volunteer</a>
         </div>
     </div>
-    <div class="hero-card">
-        <h2>Community Snapshot</h2>
-        <ul>
-            <li><strong>@Model.AvailableToolsCount</strong> available tools</li>
-            <li><strong>@Model.ActiveRepairRequestsCount</strong> active repair requests</li>
-            <li><strong>@Model.UpcomingSessionsCount</strong> upcoming repair sessions</li>
-            <li><strong>@Model.ApprovedVolunteersCount</strong> approved volunteers</li>
-        </ul>
+    <div class="hero-card stat-panel">
+        <h2>Community snapshot</h2>
+        <div class="stat-grid">
+            <div class="stat-box">
+                <span class="stat-number">@Model.AvailableToolsCount</span>
+                <span class="stat-label">Available tools</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">@Model.ActiveRepairRequestsCount</span>
+                <span class="stat-label">Active requests</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">@Model.UpcomingSessionsCount</span>
+                <span class="stat-label">Upcoming sessions</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">@Model.ApprovedVolunteersCount</span>
+                <span class="stat-label">Approved volunteers</span>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="grid grid-3">
-    @foreach (var tool in Model.FeaturedTools)
-    {
-        <article class="card">
-            <h3>@tool.Name</h3>
-            <p>@tool.Description</p>
-            <p><strong>@tool.CategoryName</strong> · @tool.LocationName</p>
-            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.Id">View tool</a>
-        </article>
-    }
+<section class="section-header">
+    <div>
+        <span class="eyebrow">Featured tools</span>
+        <h2>Popular tools ready to borrow</h2>
+    </div>
+    <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">View all tools</a>
 </section>
 
-<section class="card">
-    <h2>Latest announcements</h2>
-    @if (!Model.LatestAnnouncements.Any())
-    {
-        <p>No announcements yet.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var announcement in Model.LatestAnnouncements)
-            {
-                <li>
+@if (!Model.FeaturedTools.Any())
+{
+    <section class="empty-state">
+        <h3>No tools are featured yet</h3>
+        <p>Seeded or admin-created tools will appear here.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-3">
+        @foreach (var tool in Model.FeaturedTools)
+        {
+            <partial name="_ToolCardPartial" model="tool" />
+        }
+    </section>
+}
+
+<section class="section-header top-margin">
+    <div>
+        <span class="eyebrow">News and notices</span>
+        <h2>Latest announcements</h2>
+    </div>
+</section>
+
+@if (!Model.LatestAnnouncements.Any())
+{
+    <section class="empty-state">
+        <h3>No announcements yet</h3>
+        <p>Important updates from the platform will appear here.</p>
+    </section>
+}
+else
+{
+    <section class="stack-list">
+        @foreach (var announcement in Model.LatestAnnouncements)
+        {
+            <article class="card announcement-card">
+                <div class="item-card-topline">
                     <strong>@announcement.Title</strong>
                     @if (announcement.IsImportant)
                     {
-                        <span> - Important</span>
+                        <span class="status-badge status-warning">Important</span>
                     }
-                    <br />
-                    <span>@announcement.Content</span>
-                </li>
-            }
-        </ul>
-    }
-</section>
+                </div>
+                <p>@announcement.Content</p>
+                <p class="muted small-text">Published on @announcement.CreatedOn.ToLocalTime().ToString("dd.MM.yyyy")</p>
+            </article>
+        }
+    </section>
+}

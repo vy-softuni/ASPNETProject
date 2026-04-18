@@ -1,9 +1,12 @@
 @{
     ViewData["Title"] = "Not Found";
 }
-
-<section class="card">
-    <h1>404 - Page not found</h1>
-    <p>The page you requested does not exist.</p>
-    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to home</a>
+<section class="empty-state large-empty">
+    <div class="status-code">404</div>
+    <h1>We could not find that page</h1>
+    <p>The link may be outdated or the requested resource may have been removed.</p>
+    <div class="actions center-actions">
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to home</a>
+        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse tools</a>
+    </div>
 </section>

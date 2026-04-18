@@ -3,19 +3,33 @@
     ViewData["Title"] = "Volunteers";
 }
 
-<section class="card">
-    <h1>Volunteers</h1>
-    <p>Approved community volunteers and their repair skills.</p>
+<section class="page-header card">
+    <span class="eyebrow">Community experts</span>
+    <h1>Approved volunteers</h1>
+    <p>These volunteers have been approved to help with repair requests and workshop sessions.</p>
 </section>
 
-<section class="grid grid-2">
-    @foreach (var volunteer in Model)
-    {
-        <article class="card">
-            <h2>@volunteer.FullName</h2>
-            <p>@volunteer.Bio</p>
-            <p><strong>Experience:</strong> @volunteer.ExperienceLevel</p>
-            <p><strong>Skills:</strong> @string.Join(", ", volunteer.Skills)</p>
-        </article>
-    }
-</section>
+@if (!Model.Any())
+{
+    <section class="empty-state">
+        <h2>No volunteers listed yet</h2>
+        <p>Volunteer profiles will appear here after approval.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-2">
+        @foreach (var volunteer in Model)
+        {
+            <article class="card item-card">
+                <div class="item-card-topline">
+                    <span class="badge">Volunteer</span>
+                    <span class="status-badge status-info">@volunteer.ExperienceLevel</span>
+                </div>
+                <h2>@volunteer.FullName</h2>
+                <p class="clamp-3">@(!string.IsNullOrWhiteSpace(volunteer.Bio) ? volunteer.Bio : "No biography provided.")</p>
+                <p><strong>Skills:</strong> @string.Join(", ", volunteer.Skills)</p>
+            </article>
+        }
+    </section>
+}

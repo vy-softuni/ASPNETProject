@@ -2,7 +2,33 @@
     ViewData["Title"] = "About";
 }
 
-<section class="card">
-    <h1>About RepairCircle</h1>
-    <p>RepairCircle is a community-first ASP.NET Core MVC project for organizing tool lending, repair requests, repair sessions, and volunteer activity.</p>
+<section class="page-header card">
+    <span class="eyebrow">About the platform</span>
+    <h1>What RepairCircle does</h1>
+    <p>RepairCircle is an ASP.NET Core MVC application for managing community repair requests, repair sessions, volunteer participation, and tool lending.</p>
+</section>
+
+<section class="grid grid-3">
+    <article class="card">
+        <h2>Repair requests</h2>
+        <p>Users can submit broken-item requests, attach descriptions, choose a workshop location, and track the progress of each request.</p>
+    </article>
+    <article class="card">
+        <h2>Tool lending</h2>
+        <p>Members can browse the available inventory, review tool conditions and locations, and request a borrowing record.</p>
+    </article>
+    <article class="card">
+        <h2>Volunteer support</h2>
+        <p>Approved volunteers can offer practical skills and assist during community repair sessions.</p>
+    </article>
+</section>
+
+<section class="card top-margin">
+    <h2>Academic project goals</h2>
+    <ul>
+        <li>MVC architecture with a clear service layer and Entity Framework Core.</li>
+        <li>ASP.NET Identity for authentication, roles, and authorization.</li>
+        <li>Areas, validation, custom error handling, and secure form submissions.</li>
+        <li>Responsive Razor-based interface with shared partial views and reusable form sections.</li>
+    </ul>
 </section>

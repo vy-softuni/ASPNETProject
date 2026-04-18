@@ -3,14 +3,17 @@
     ViewData["Title"] = "Admin Announcements";
 }
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
-<section class="card">
-    <div class="actions" style="justify-content: space-between; align-items: center;">
-        <h1>Announcements</h1>
+<section class="card table-card">
+    <div class="page-header-inline">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>Announcements</h1>
+        </div>
         <a class="btn btn-primary" asp-action="Create">Create announcement</a>
     </div>
     <table>
         <thead>
-            <tr><th>Title</th><th>Important</th><th>Published</th><th></th></tr>
+            <tr><th>Title</th><th>Important</th><th>Published</th><th>Created</th><th></th></tr>
         </thead>
         <tbody>
         @foreach (var announcement in Model)
@@ -19,12 +22,16 @@
                 <td>@announcement.Title</td>
                 <td>@(announcement.IsImportant ? "Yes" : "No")</td>
                 <td>@(announcement.IsPublished ? "Yes" : "No")</td>
+                <td>@announcement.CreatedOn.ToLocalTime().ToString("dd.MM.yyyy")</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@announcement.Id">Edit</a>
-                    <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Delete this announcement?');">
-                        <input type="hidden" name="id" value="@announcement.Id" />
-                        <button type="submit">Delete</button>
-                    </form>
+                    <div class="table-actions">
+                        <a asp-action="Edit" asp-route-id="@announcement.Id">Edit</a>
+                        <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Delete this announcement?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@announcement.Id" />
+                            <button type="submit" class="btn-link-danger">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         }

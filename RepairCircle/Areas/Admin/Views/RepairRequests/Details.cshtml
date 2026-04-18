@@ -3,53 +3,91 @@
     ViewData["Title"] = "Manage Repair Request";
 }
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
-<section class="card">
-    <h1>@Model.Title</h1>
-    <p>@Model.Description</p>
-    <p><strong>Item type:</strong> @Model.ItemType</p>
-    <p><strong>Submitted by:</strong> @(Model.SubmittedByUser.FullName ?? Model.SubmittedByUser.Email)</p>
-    <p><strong>Location:</strong> @Model.Location.Name</p>
-    <p><strong>Requested:</strong> @Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
 
-    <form asp-action="Update" method="post">
-        <input type="hidden" name="id" value="@Model.Id" />
-
-        <label for="assignedVolunteerProfileId">Assigned volunteer</label>
-        <select id="assignedVolunteerProfileId" name="assignedVolunteerProfileId" asp-items="ViewBag.Volunteers">
-            <option value="">No volunteer</option>
-        </select>
-
-        <label for="repairSessionId">Repair session</label>
-        <select id="repairSessionId" name="repairSessionId" asp-items="ViewBag.RepairSessions">
-            <option value="">No session</option>
-        </select>
-
-        <label for="status">Status</label>
-        <select id="status" name="status" asp-items="ViewBag.Statuses"></select>
-
-        <div class="actions">
-            <button type="submit">Save changes</button>
-            <a class="btn btn-secondary" asp-action="Index">Back</a>
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <div class="item-card-topline">
+            <span class="badge">@Model.ItemType</span>
+            <span class="status-badge">@Model.Status</span>
         </div>
-    </form>
+        <h1>@Model.Title</h1>
+        <p class="lead">@Model.Description</p>
+        <dl class="meta-list">
+            <div>
+                <dt>Submitted by</dt>
+                <dd>@(Model.SubmittedByUser.FullName ?? Model.SubmittedByUser.Email)</dd>
+            </div>
+            <div>
+                <dt>Current volunteer</dt>
+                <dd>@(Model.AssignedVolunteerProfile?.User.FullName ?? Model.AssignedVolunteerProfile?.User.Email ?? "Not assigned")</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.Location.Name</dd>
+            </div>
+            <div>
+                <dt>Requested on</dt>
+                <dd>@Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+            </div>
+            <div>
+                <dt>Repair session</dt>
+                <dd>@(Model.RepairSession?.Title ?? "No session assigned")</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="card detail-sidebar">
+        <h2>Manage assignment</h2>
+        <form asp-action="Update" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="form-field">
+                <label for="assignedVolunteerProfileId">Assigned volunteer</label>
+                <select id="assignedVolunteerProfileId" name="assignedVolunteerProfileId" asp-items="ViewBag.Volunteers">
+                    <option value="">No volunteer</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="repairSessionId">Repair session</label>
+                <select id="repairSessionId" name="repairSessionId" asp-items="ViewBag.RepairSessions">
+                    <option value="">No session</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="status">Status</label>
+                <select id="status" name="status" asp-items="ViewBag.Statuses"></select>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a class="btn btn-secondary" asp-action="Index">Back</a>
+            </div>
+        </form>
+    </aside>
 </section>
 
-<section class="card">
+<section class="card top-margin">
     <h2>Feedback</h2>
     @if (!Model.Feedbacks.Any())
     {
-        <p>No feedback yet.</p>
+        <p class="muted">No feedback has been submitted yet.</p>
     }
     else
     {
-        <ul>
+        <div class="stack-list">
             @foreach (var feedback in Model.Feedbacks.OrderByDescending(f => f.CreatedOn))
             {
-                <li>
-                    <strong>@(feedback.User.FullName ?? feedback.User.Email)</strong> - @feedback.Rating/5<br />
-                    @feedback.Comment
-                </li>
+                <article class="card feedback-card">
+                    <div class="item-card-topline">
+                        <strong>@(feedback.User.FullName ?? feedback.User.Email)</strong>
+                        <span class="status-badge status-info">@feedback.Rating / 5</span>
+                    </div>
+                    <p>@feedback.Comment</p>
+                </article>
             }
-        </ul>
+        </div>
     }
 </section>

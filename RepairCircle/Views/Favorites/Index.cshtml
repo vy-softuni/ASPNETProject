@@ -3,31 +3,40 @@
     ViewData["Title"] = "My Favorite Tools";
 }
 
-<section class="card">
-    <h1>My Favorite Tools</h1>
-    @if (!Model.Any())
-    {
-        <p>You have not added any tools to your favorites yet.</p>
-    }
-    else
-    {
-        <div class="grid grid-2">
-            @foreach (var tool in Model)
-            {
-                <article class="card">
-                    <h2>@tool.ToolName</h2>
-                    <p><strong>Category:</strong> @tool.CategoryName</p>
-                    <p><strong>Location:</strong> @tool.LocationName</p>
-                    <p><strong>Status:</strong> @(tool.IsAvailable ? "Available" : "Unavailable")</p>
-                    <div class="actions">
-                        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.ToolId">View details</a>
-                        <form asp-action="Remove" method="post" class="inline-form">
-                            <input type="hidden" name="toolId" value="@tool.ToolId" />
-                            <button type="submit">Remove</button>
-                        </form>
-                    </div>
-                </article>
-            }
-        </div>
-    }
+<section class="page-header card">
+    <span class="eyebrow">Saved items</span>
+    <h1>My favorite tools</h1>
+    <p>Keep a shortlist of useful tools you may want to borrow later.</p>
 </section>
+
+@if (!Model.Any())
+{
+    <section class="empty-state">
+        <h2>No favorites yet</h2>
+        <p>Add tools from the details page and they will appear here.</p>
+    </section>
+}
+else
+{
+    <section class="grid grid-2">
+        @foreach (var tool in Model)
+        {
+            <article class="card item-card">
+                <div class="item-card-topline">
+                    <span class="badge">@tool.CategoryName</span>
+                    <span class="status-badge @(tool.IsAvailable ? "status-success" : "status-muted")">@(tool.IsAvailable ? "Available" : "Unavailable")</span>
+                </div>
+                <h2>@tool.ToolName</h2>
+                <p><strong>Location:</strong> @tool.LocationName</p>
+                <div class="actions">
+                    <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.ToolId">View details</a>
+                    <form asp-action="Remove" method="post" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="toolId" value="@tool.ToolId" />
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    </form>
+                </div>
+            </article>
+        }
+    </section>
+}

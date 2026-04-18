@@ -3,14 +3,17 @@
     ViewData["Title"] = "Admin Tools";
 }
 <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
-<section class="card">
-    <div class="actions" style="justify-content: space-between; align-items: center;">
-        <h1>Tools</h1>
+<section class="card table-card">
+    <div class="page-header-inline">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>Tools</h1>
+        </div>
         <a class="btn btn-primary" asp-action="Create">Create tool</a>
     </div>
     <table>
         <thead>
-            <tr><th>Name</th><th>Category</th><th>Location</th><th>Status</th><th></th></tr>
+            <tr><th>Name</th><th>Category</th><th>Location</th><th>Quantity</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
         @foreach (var tool in Model)
@@ -19,13 +22,17 @@
                 <td>@tool.Name</td>
                 <td>@tool.ToolCategory.Name</td>
                 <td>@tool.Location.Name</td>
-                <td>@(tool.IsAvailable ? "Available" : "Unavailable")</td>
+                <td>@tool.Quantity</td>
+                <td><span class="status-badge @(tool.IsAvailable ? "status-success" : "status-muted")">@(tool.IsAvailable ? "Available" : "Unavailable")</span></td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@tool.Id">Edit</a>
-                    <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Delete this tool?');">
-                        <input type="hidden" name="id" value="@tool.Id" />
-                        <button type="submit">Delete</button>
-                    </form>
+                    <div class="table-actions">
+                        <a asp-action="Edit" asp-route-id="@tool.Id">Edit</a>
+                        <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Delete this tool?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@tool.Id" />
+                            <button type="submit" class="btn-link-danger">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         }

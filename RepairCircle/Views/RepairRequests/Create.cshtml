@@ -3,61 +3,70 @@
     ViewData["Title"] = "Create Repair Request";
 }
 
-<section class="card">
-    <h1>Create Repair Request</h1>
+<section class="page-header card">
+    <span class="eyebrow">New request</span>
+    <h1>Create a repair request</h1>
+    <p>Describe the item, choose a location, and optionally link the request to an available repair session.</p>
+</section>
 
+<section class="card">
     <form asp-action="Create" method="post">
         @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-        <div>
-            <label asp-for="Input.Title"></label>
-            <input asp-for="Input.Title" />
-            <span asp-validation-for="Input.Title"></span>
+        <div class="form-grid">
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.Title"></label>
+                <input asp-for="Input.Title" placeholder="Example: Electric kettle not heating" />
+                <span asp-validation-for="Input.Title"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.ItemType"></label>
+                <input asp-for="Input.ItemType" placeholder="Appliance, bicycle, sewing machine..." />
+                <span asp-validation-for="Input.ItemType"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.LocationId">Location</label>
+                <select asp-for="Input.LocationId">
+                    <option value="">Select location</option>
+                    @foreach (var location in Model.Locations)
+                    {
+                        <option value="@location.Id">@location.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="Input.LocationId"></span>
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.Description"></label>
+                <textarea asp-for="Input.Description" placeholder="Explain the issue, symptoms, and any previous repair attempts."></textarea>
+                <span asp-validation-for="Input.Description"></span>
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.ImageUrl"></label>
+                <input asp-for="Input.ImageUrl" placeholder="Optional image URL for the broken item" />
+                <span asp-validation-for="Input.ImageUrl"></span>
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.RepairSessionId">Repair session</label>
+                <select asp-for="Input.RepairSessionId">
+                    <option value="">No session yet</option>
+                    @foreach (var session in Model.RepairSessions)
+                    {
+                        <option value="@session.Id">@session.Name</option>
+                    }
+                </select>
+            </div>
         </div>
 
-        <div>
-            <label asp-for="Input.Description"></label>
-            <textarea asp-for="Input.Description"></textarea>
-            <span asp-validation-for="Input.Description"></span>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Submit request</button>
+            <a class="btn btn-secondary" asp-action="Index">Back to requests</a>
         </div>
-
-        <div>
-            <label asp-for="Input.ItemType"></label>
-            <input asp-for="Input.ItemType" />
-            <span asp-validation-for="Input.ItemType"></span>
-        </div>
-
-        <div>
-            <label asp-for="Input.ImageUrl"></label>
-            <input asp-for="Input.ImageUrl" />
-            <span asp-validation-for="Input.ImageUrl"></span>
-        </div>
-
-        <div>
-            <label asp-for="Input.LocationId">Location</label>
-            <select asp-for="Input.LocationId">
-                <option value="">Select location</option>
-                @foreach (var location in Model.Locations)
-                {
-                    <option value="@location.Id">@location.Name</option>
-                }
-            </select>
-            <span asp-validation-for="Input.LocationId"></span>
-        </div>
-
-        <div>
-            <label asp-for="Input.RepairSessionId">Repair Session (optional)</label>
-            <select asp-for="Input.RepairSessionId">
-                <option value="">No session selected</option>
-                @foreach (var session in Model.RepairSessions)
-                {
-                    <option value="@session.Id">@session.Name</option>
-                }
-            </select>
-            <span asp-validation-for="Input.RepairSessionId"></span>
-        </div>
-
-        <button class="btn btn-primary" type="submit">Submit request</button>
     </form>
 </section>
 

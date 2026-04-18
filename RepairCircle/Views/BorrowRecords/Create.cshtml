@@ -3,23 +3,54 @@
     ViewData["Title"] = "Borrow Tool";
 }
 
-<section class="card">
+<section class="page-header card">
+    <span class="eyebrow">Borrowing request</span>
     <h1>Borrow @Model.ToolName</h1>
-    <p><strong>Pickup location:</strong> @Model.LocationName</p>
-    <p><strong>Available quantity:</strong> @Model.AvailableQuantity</p>
-    <p><strong>Current status:</strong> @(Model.IsAvailable ? "Available" : "Unavailable")</p>
+    <p>Choose a due date and submit a request for approval.</p>
+</section>
 
-    <form asp-action="Create" method="post">
-        <input asp-for="Input.ToolId" type="hidden" />
-        <label asp-for="Input.DueDate">Preferred due date</label>
-        <input asp-for="Input.DueDate" type="date" />
-        <span asp-validation-for="Input.DueDate"></span>
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <dl class="meta-list">
+            <div>
+                <dt>Pickup location</dt>
+                <dd>@Model.LocationName</dd>
+            </div>
+            <div>
+                <dt>Available quantity</dt>
+                <dd>@Model.AvailableQuantity</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd>@(Model.IsAvailable ? "Available" : "Unavailable")</dd>
+            </div>
+        </dl>
 
-        <div class="actions">
-            <button type="submit" class="btn btn-primary">Submit borrowing request</button>
-            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model.Input.ToolId">Back to tool</a>
-        </div>
-    </form>
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="Input.ToolId" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+            <div class="form-field">
+                <label asp-for="Input.DueDate">Preferred due date</label>
+                <input asp-for="Input.DueDate" type="date" />
+                <span asp-validation-for="Input.DueDate"></span>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Submit borrowing request</button>
+                <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model.Input.ToolId">Back to tool</a>
+            </div>
+        </form>
+    </article>
+
+    <aside class="card detail-sidebar">
+        <h2>Before you submit</h2>
+        <ul>
+            <li>Make sure the due date is after today.</li>
+            <li>The final status is managed by the system and admin workflow.</li>
+            <li>Borrowing references will appear in your personal records.</li>
+        </ul>
+    </aside>
 </section>
 
 @section Scripts {

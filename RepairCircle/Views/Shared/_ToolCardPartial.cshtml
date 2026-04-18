@@ -1,0 +1,28 @@
+@model ToolListItemViewModel
+<article class="card item-card tool-card">
+    <div class="item-card-body">
+        <div class="item-card-topline">
+            <span class="badge">@Model.CategoryName</span>
+            <span class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
+        </div>
+        <h3>@Model.Name</h3>
+        <p class="muted clamp-3">@Model.Description</p>
+        <dl class="meta-list compact-meta">
+            <div>
+                <dt>Condition</dt>
+                <dd>@Model.Condition</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.LocationName, @Model.City</dd>
+            </div>
+            <div>
+                <dt>Quantity</dt>
+                <dd>@Model.Quantity</dd>
+            </div>
+        </dl>
+    </div>
+    <div class="actions">
+        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model.Id">View details</a>
+    </div>
+</article>
