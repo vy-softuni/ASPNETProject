@@ -21,6 +21,20 @@ public class RepairRequestsController : Controller
         return View(model);
     }
 
+    [Authorize]
+    public async Task<IActionResult> MyRequests()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var model = await repairRequestService.GetMineAsync(userId);
+        ViewData["Title"] = "My Repair Requests";
+        return View("Index", model);
+    }
+
     public async Task<IActionResult> Details(int id)
     {
         var model = await repairRequestService.GetByIdAsync(id);

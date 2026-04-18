@@ -1,0 +1,27 @@
+@model BorrowRecordCreateViewModel
+@{
+    ViewData["Title"] = "Borrow Tool";
+}
+
+<section class="card">
+    <h1>Borrow @Model.ToolName</h1>
+    <p><strong>Pickup location:</strong> @Model.LocationName</p>
+    <p><strong>Available quantity:</strong> @Model.AvailableQuantity</p>
+    <p><strong>Current status:</strong> @(Model.IsAvailable ? "Available" : "Unavailable")</p>
+
+    <form asp-action="Create" method="post">
+        <input asp-for="Input.ToolId" type="hidden" />
+        <label asp-for="Input.DueDate">Preferred due date</label>
+        <input asp-for="Input.DueDate" type="date" />
+        <span asp-validation-for="Input.DueDate"></span>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Submit borrowing request</button>
+            <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model.Input.ToolId">Back to tool</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

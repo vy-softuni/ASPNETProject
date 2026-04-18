@@ -16,7 +16,12 @@
                 <a asp-controller="RepairRequests" asp-action="Index">Repairs</a>
                 <a asp-controller="RepairSessions" asp-action="Index">Sessions</a>
                 <a asp-controller="Volunteers" asp-action="Index">Volunteers</a>
-                <a asp-controller="BorrowRecords" asp-action="MyRecords">My Borrowings</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="RepairRequests" asp-action="MyRequests">My Repairs</a>
+                    <a asp-controller="BorrowRecords" asp-action="MyRecords">My Borrowings</a>
+                    <a asp-controller="Favorites" asp-action="Index">Favorites</a>
+                }
                 <a asp-controller="Home" asp-action="Contact">Contact</a>
                 @if (User.IsInRole("Administrator"))
                 {

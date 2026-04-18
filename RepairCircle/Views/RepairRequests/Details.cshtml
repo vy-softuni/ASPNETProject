@@ -13,6 +13,14 @@
     <p><strong>Location:</strong> @Model.LocationName, @Model.City</p>
     <p><strong>Repair session:</strong> @(Model.RepairSessionTitle ?? "Independent request")</p>
     <p><strong>Requested on:</strong> @Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="actions">
+            <a class="btn btn-primary" asp-controller="Feedback" asp-action="Create" asp-route-repairRequestId="@Model.Id">Leave feedback</a>
+            <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="MyRequests">My requests</a>
+        </div>
+    }
 </section>
 
 <section class="card">

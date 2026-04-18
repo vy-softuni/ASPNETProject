@@ -1,0 +1,33 @@
+@model IReadOnlyCollection<FavoriteListItemViewModel>
+@{
+    ViewData["Title"] = "My Favorite Tools";
+}
+
+<section class="card">
+    <h1>My Favorite Tools</h1>
+    @if (!Model.Any())
+    {
+        <p>You have not added any tools to your favorites yet.</p>
+    }
+    else
+    {
+        <div class="grid grid-2">
+            @foreach (var tool in Model)
+            {
+                <article class="card">
+                    <h2>@tool.ToolName</h2>
+                    <p><strong>Category:</strong> @tool.CategoryName</p>
+                    <p><strong>Location:</strong> @tool.LocationName</p>
+                    <p><strong>Status:</strong> @(tool.IsAvailable ? "Available" : "Unavailable")</p>
+                    <div class="actions">
+                        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.ToolId">View details</a>
+                        <form asp-action="Remove" method="post" class="inline-form">
+                            <input type="hidden" name="toolId" value="@tool.ToolId" />
+                            <button type="submit">Remove</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

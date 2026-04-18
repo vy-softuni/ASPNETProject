@@ -15,6 +15,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowRecordService, BorrowRecordService>();
         services.AddScoped<IVolunteerService, VolunteerService>();
         services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
+        services.AddScoped<IFeedbackService, FeedbackService>();
 
         return services;
     }

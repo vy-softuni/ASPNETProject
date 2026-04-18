@@ -18,26 +18,21 @@ public class RepairRequestService : IRepairRequestService
 
     public async Task<RepairRequestIndexViewModel> GetAllAsync()
     {
-        var requests = await dbContext.RepairRequests
-            .AsNoTracking()
-            .Include(r => r.SubmittedByUser)
-            .Include(r => r.AssignedVolunteerProfile)
-                .ThenInclude(v => v!.User)
-            .Include(r => r.Location)
+        var requests = await BuildRequestListQuery()
             .OrderByDescending(r => r.RequestedDate)
-            .Select(r => new RepairRequestListItemViewModel
-            {
-                Id = r.Id,
-                Title = r.Title,
-                ItemType = r.ItemType,
-                Status = r.Status.ToString(),
-                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
-                AssignedVolunteer = r.AssignedVolunteerProfile != null
-                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
-                    : null,
-                LocationName = $"{r.Location.Name} ({r.Location.City})",
-                RequestedDate = r.RequestedDate
-            })
+            .ToListAsync();
+
+        return new RepairRequestIndexViewModel
+        {
+            Requests = requests
+        };
+    }
+
+    public async Task<RepairRequestIndexViewModel> GetMineAsync(string userId)
+    {
+        var requests = await BuildRequestListQuery()
+            .Where(r => r.SubmittedByUserId == userId)
+            .OrderByDescending(r => r.RequestedDate)
             .ToListAsync();
 
         return new RepairRequestIndexViewModel
@@ -137,5 +132,34 @@ public class RepairRequestService : IRepairRequestService
         await dbContext.SaveChangesAsync();
 
         return repairRequest.Id;
+    }
+
+    private IQueryable<RepairRequestListProjection> BuildRequestListQuery()
+    {
+        return dbContext.RepairRequests
+            .AsNoTracking()
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .Select(r => new RepairRequestListProjection
+            {
+                Id = r.Id,
+                Title = r.Title,
+                ItemType = r.ItemType,
+                Status = r.Status.ToString(),
+                SubmittedByUserId = r.SubmittedByUserId,
+                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                AssignedVolunteer = r.AssignedVolunteerProfile != null
+                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
+                    : null,
+                LocationName = $"{r.Location.Name} ({r.Location.City})",
+                RequestedDate = r.RequestedDate
+            });
+    }
+
+    private sealed class RepairRequestListProjection : RepairRequestListItemViewModel
+    {
+        public string SubmittedByUserId { get; set; } = string.Empty;
     }
 }

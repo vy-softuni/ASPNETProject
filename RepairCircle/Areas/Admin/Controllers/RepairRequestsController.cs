@@ -1,0 +1,106 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using RepairCircle.Data;
+using RepairCircle.Data.Enums;
+using RepairCircle.Data.Models;
+
+namespace RepairCircle.Areas.Admin.Controllers;
+
+[Area("Admin")]
+[Authorize(Roles = "Administrator")]
+public class RepairRequestsController : Controller
+{
+    private readonly ApplicationDbContext dbContext;
+
+    public RepairRequestsController(ApplicationDbContext dbContext)
+    {
+        this.dbContext = dbContext;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var requests = await dbContext.RepairRequests
+            .AsNoTracking()
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .Include(r => r.RepairSession)
+            .OrderByDescending(r => r.RequestedDate)
+            .ToListAsync();
+
+        return View(requests);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var request = await dbContext.RepairRequests
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .Include(r => r.RepairSession)
+            .Include(r => r.Feedbacks)
+                .ThenInclude(f => f.User)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (request is null)
+        {
+            return NotFound();
+        }
+
+        await PopulateLookupsAsync(request.AssignedVolunteerProfileId, request.RepairSessionId, request.Status);
+        return View(request);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Update(int id, int? assignedVolunteerProfileId, int? repairSessionId, RepairRequestStatus status)
+    {
+        var request = await dbContext.RepairRequests.FirstOrDefaultAsync(r => r.Id == id);
+        if (request is null)
+        {
+            return NotFound();
+        }
+
+        request.AssignedVolunteerProfileId = assignedVolunteerProfileId;
+        request.RepairSessionId = repairSessionId;
+        request.Status = status;
+        request.ModifiedOn = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    private async Task PopulateLookupsAsync(int? selectedVolunteerProfileId, int? selectedRepairSessionId, RepairRequestStatus selectedStatus)
+    {
+        var volunteers = await dbContext.VolunteerProfiles
+            .AsNoTracking()
+            .Include(v => v.User)
+            .Where(v => v.IsApproved)
+            .OrderBy(v => v.User.FullName)
+            .Select(v => new
+            {
+                v.Id,
+                Name = v.User.FullName ?? v.User.UserName ?? v.User.Email ?? "Unknown user"
+            })
+            .ToListAsync();
+
+        var sessions = await dbContext.RepairSessions
+            .AsNoTracking()
+            .OrderBy(rs => rs.StartDate)
+            .Select(rs => new
+            {
+                rs.Id,
+                Name = rs.Title
+            })
+            .ToListAsync();
+
+        ViewBag.Volunteers = new SelectList(volunteers, "Id", "Name", selectedVolunteerProfileId);
+        ViewBag.RepairSessions = new SelectList(sessions, "Id", "Name", selectedRepairSessionId);
+        ViewBag.Statuses = new SelectList(Enum.GetValues<RepairRequestStatus>().Select(s => new { Id = s, Name = s.ToString() }), "Id", "Name", selectedStatus);
+    }
+}

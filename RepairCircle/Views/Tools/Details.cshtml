@@ -18,4 +18,16 @@
     {
         <p><strong>Map coordinates:</strong> @Model.Latitude, @Model.Longitude</p>
     }
+
+    <div class="actions">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="btn btn-primary" asp-controller="BorrowRecords" asp-action="Create" asp-route-toolId="@Model.Id">Borrow this tool</a>
+            <form asp-controller="Favorites" asp-action="Add" method="post" class="inline-form">
+                <input type="hidden" name="toolId" value="@Model.Id" />
+                <button type="submit">Add to favorites</button>
+            </form>
+        }
+        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Back to tools</a>
+    </div>
 </section>

@@ -1,0 +1,34 @@
+@model FeedbackFormViewModel
+@{
+    ViewData["Title"] = "Edit Feedback";
+}
+
+@model FeedbackFormViewModel
+<section class="card">
+    <h1>@ViewData["Title"]</h1>
+    <p><strong>Repair request:</strong> @Model.RepairRequestTitle</p>
+
+    <form method="post">
+        <input asp-for="Input.Id" type="hidden" />
+        <input asp-for="Input.RepairRequestId" type="hidden" />
+
+        <label asp-for="Input.Rating">Rating</label>
+        <input asp-for="Input.Rating" type="number" min="1" max="5" />
+        <span asp-validation-for="Input.Rating"></span>
+
+        <label asp-for="Input.Comment">Comment</label>
+        <textarea asp-for="Input.Comment"></textarea>
+        <span asp-validation-for="Input.Comment"></span>
+
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="Details" asp-route-id="@Model.Input.RepairRequestId">Back to request</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,26 @@
+@model IEnumerable<RepairRequest>
+@{
+    ViewData["Title"] = "Admin Repair Requests";
+}
+<partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
+<section class="card">
+    <h1>Repair Requests</h1>
+    <table>
+        <thead>
+            <tr><th>Title</th><th>Status</th><th>User</th><th>Volunteer</th><th>Location</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var request in Model)
+        {
+            <tr>
+                <td>@request.Title</td>
+                <td>@request.Status</td>
+                <td>@(request.SubmittedByUser.FullName ?? request.SubmittedByUser.Email)</td>
+                <td>@(request.AssignedVolunteerProfile?.User.FullName ?? "-")</td>
+                <td>@request.Location.Name</td>
+                <td><a asp-action="Details" asp-route-id="@request.Id">Manage</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>

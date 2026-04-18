@@ -1,0 +1,33 @@
+@model IEnumerable<Location>
+@{
+    ViewData["Title"] = "Admin Locations";
+}
+<partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
+<section class="card">
+    <div class="actions" style="justify-content: space-between; align-items: center;">
+        <h1>Locations</h1>
+        <a class="btn btn-primary" asp-action="Create">Create location</a>
+    </div>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>City</th><th>Address</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var location in Model)
+        {
+            <tr>
+                <td>@location.Name</td>
+                <td>@location.City</td>
+                <td>@location.Address</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@location.Id">Edit</a>
+                    <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Delete this location?');">
+                        <input type="hidden" name="id" value="@location.Id" />
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
