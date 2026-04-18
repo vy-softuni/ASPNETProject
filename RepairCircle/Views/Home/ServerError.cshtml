@@ -1,10 +1,22 @@
+@model RepairCircle.Models.StatusCodeErrorViewModel
 @{
     ViewData["Title"] = "Server Error";
 }
 <section class="empty-state large-empty">
     <div class="status-code">500</div>
     <h1>Something went wrong</h1>
-    <p>An unexpected error occurred while processing your request.</p>
+    <p>An unexpected error occurred while processing your request. Please try again in a moment.</p>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FullOriginalUrl))
+    {
+        <p class="error-meta"><strong>Source path:</strong> <code>@Model.FullOriginalUrl</code></p>
+    }
+
+    @if (Model.ShowRequestId)
+    {
+        <p class="error-meta"><strong>Request ID:</strong> <code>@Model.RequestId</code></p>
+    }
+
     <div class="actions center-actions">
         <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Return to home</a>
         <a class="btn btn-secondary" asp-controller="Home" asp-action="Contact">Contact support</a>

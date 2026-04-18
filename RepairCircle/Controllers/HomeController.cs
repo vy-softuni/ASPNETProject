@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using RepairCircle.Models;
 using RepairCircle.Services.Interfaces;
@@ -24,14 +25,52 @@ public class HomeController : Controller
 
     public IActionResult Contact() => View();
 
-    public IActionResult StatusCode(int code)
+    [Route("Home/StatusCode")]
+    [ActionName("StatusCode")]
+    public IActionResult HttpStatusCode(int code)
     {
+        var feature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+        var model = new StatusCodeErrorViewModel
+        {
+            StatusCode = code,
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+            OriginalPath = feature?.OriginalPath,
+            OriginalQueryString = feature?.OriginalQueryString,
+        };
+
         if (code == 404)
         {
-            return View("NotFound");
+            Response.StatusCode = 404;
+            return View("NotFound", model);
         }
 
-        return View("ServerError");
+        Response.StatusCode = code >= 400 ? code : 500;
+        return View("ServerError", model);
+    }
+
+    [Route("Home/ServerError")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    [ActionName("ServerError")]
+    public IActionResult ServerErrorPage()
+    {
+        var feature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+
+        var model = new StatusCodeErrorViewModel
+        {
+            StatusCode = 500,
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+            OriginalPath = feature?.Path,
+        };
+
+        Response.StatusCode = 500;
+        return View(model);
+    }
+
+    [Route("Home/AccessDenied")]
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

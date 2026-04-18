@@ -889,3 +889,16 @@ th {
     gap: 1rem;
     align-items: end;
 }
+
+
+.error-meta {
+    margin-top: 0.75rem;
+    color: #5b6573;
+    word-break: break-word;
+}
+
+.error-meta code {
+    background: #f3f5f7;
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.35rem;
+}
