@@ -1,13 +1,11 @@
 @model DashboardStatsViewModel
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Dashboard";
 }
-<partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
-
 <section class="page-header card admin-page-header">
     <span class="eyebrow">Administration</span>
-    <h1>Dashboard</h1>
-    <p>Use this area to manage content, requests, locations, and repair activity.</p>
+    <h2>Dashboard overview</h2>
+    <p>Use this area to manage tools, monitor active repairs, review borrowing activity, and maintain repair locations.</p>
 </section>
 
 <section class="grid grid-3">
@@ -34,5 +32,50 @@
     <article class="card stat-box admin-stat">
         <span class="stat-number">@Model.UpcomingSessionsCount</span>
         <span class="stat-label">Upcoming sessions</span>
+    </article>
+</section>
+
+<section class="grid grid-2 top-margin">
+    <article class="card">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Quick actions</span>
+                <h3>Management shortcuts</h3>
+            </div>
+        </div>
+        <div class="admin-shortcuts">
+            <a class="card shortcut-card" asp-area="Admin" asp-controller="Tools" asp-action="Create">
+                <strong>Add a new tool</strong>
+                <span>Create a borrowable item and assign it to a category and location.</span>
+            </a>
+            <a class="card shortcut-card" asp-area="Admin" asp-controller="RepairSessions" asp-action="Create">
+                <strong>Create a repair session</strong>
+                <span>Schedule a workshop and manage available participant slots.</span>
+            </a>
+            <a class="card shortcut-card" asp-area="Admin" asp-controller="Locations" asp-action="Create">
+                <strong>Add a location</strong>
+                <span>Register a new community workshop or pickup point.</span>
+            </a>
+            <a class="card shortcut-card" asp-area="Admin" asp-controller="Announcements" asp-action="Create">
+                <strong>Publish an announcement</strong>
+                <span>Share important public updates on repairs, sessions, or policy changes.</span>
+            </a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Admin guide</span>
+                <h3>Suggested workflow</h3>
+            </div>
+        </div>
+        <ol class="admin-steps">
+            <li>Keep locations and available tools up to date.</li>
+            <li>Review newly submitted repair requests and assign approved volunteers.</li>
+            <li>Attach requests to repair sessions when relevant.</li>
+            <li>Monitor pending borrowings and confirm returns on time.</li>
+            <li>Publish announcements for schedule changes or important notices.</li>
+        </ol>
     </article>
 </section>

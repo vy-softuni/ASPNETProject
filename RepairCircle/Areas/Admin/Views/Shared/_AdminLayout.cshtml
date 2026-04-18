@@ -1,0 +1,52 @@
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Admin";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - RepairCircle Admin</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="admin-brand-wrap">
+                <a class="admin-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">RepairCircle Admin</a>
+                <p class="admin-brand-subtitle">Manage tools, repairs, sessions, locations, and users.</p>
+            </div>
+
+            <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
+
+            <div class="admin-sidebar-footer card">
+                <p><strong>Signed in as</strong></p>
+                <p>@(User.Identity?.Name ?? "Administrator")</p>
+                <div class="admin-sidebar-actions">
+                    <a class="btn btn-secondary" asp-area="" asp-controller="Home" asp-action="Index">Back to site</a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <span class="eyebrow">Administration</span>
+                    <h1 class="admin-topbar-title">@title</h1>
+                </div>
+                <div class="admin-topbar-actions">
+                    <a class="btn btn-secondary" asp-area="" asp-controller="Home" asp-action="Index">Public site</a>
+                    <a class="btn btn-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

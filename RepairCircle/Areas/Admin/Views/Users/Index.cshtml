@@ -1,0 +1,43 @@
+@model IEnumerable<AdminUserListItemViewModel>
+@{
+    ViewData["Title"] = "Users";
+}
+<section class="card table-card">
+    <div class="page-header-inline">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h2>Users and roles</h2>
+            <p>Overview of registered users, volunteer accounts, and administrators.</p>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Roles</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@(string.IsNullOrWhiteSpace(user.FullName) ? "—" : user.FullName)</td>
+                <td>@user.Email</td>
+                <td>@(string.IsNullOrWhiteSpace(user.UserName) ? "—" : user.UserName)</td>
+                <td>
+                    <div class="inline-badges">
+                        @foreach (var role in user.Roles)
+                        {
+                            <span class="badge">@role</span>
+                        }
+                    </div>
+                </td>
+                <td>@user.CreatedOn.ToLocalTime().ToString("dd MMM yyyy")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
