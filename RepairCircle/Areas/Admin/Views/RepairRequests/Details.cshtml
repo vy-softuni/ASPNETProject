@@ -80,11 +80,11 @@
         </form>
         <partial name="~/Views/Shared/_LocationMapPartial.cshtml" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
         {
-            Title = Model.LocationName,
-            AddressLine = Model.Address,
-            City = Model.City,
-            Latitude = Model.Latitude,
-            Longitude = Model.Longitude
+            Title = Model.Location.Name,
+            AddressLine = Model.Location.Address,
+            City = Model.Location.City,
+            Latitude = Model.Location.Latitude,
+            Longitude = Model.Location.Longitude
         }" />
     </aside>
 </section>
