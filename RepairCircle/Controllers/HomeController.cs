@@ -25,6 +25,8 @@ public class HomeController : Controller
 
     public IActionResult Contact() => View();
 
+    public IActionResult TestingGuide() => View();
+
     [Route("Home/StatusCode")]
     [ActionName("StatusCode")]
     public IActionResult HttpStatusCode(int code)

@@ -1263,3 +1263,137 @@ th {
 .top-margin-sm {
     margin-top: 0.75rem;
 }
+
+
+.actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(21, 111, 92, 0.22);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    border-color: #b4c4cf;
+    color: var(--text);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.muted-text {
+    color: var(--muted);
+}
+
+.small-text {
+    font-size: 0.9rem;
+}
+
+.feature-card {
+    min-height: 100%;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%);
+}
+
+.page-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #0b1f1a 0%, #12483d 100%);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.page-cta .eyebrow,
+.page-cta .lead,
+.page-cta h2 {
+    color: #fff;
+}
+
+.checklist-card h2 {
+    margin-top: 0.35rem;
+}
+
+.feature-list,
+.flow-list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.feature-list li,
+.flow-list li {
+    margin-bottom: 0.5rem;
+}
+
+.credential-card {
+    background: #f8fbf9;
+    border: 1px dashed #bfd4cb;
+    border-radius: 18px;
+    padding: 1rem;
+}
+
+.credential-card h3 {
+    margin-top: 0;
+}
+
+code {
+    background: #eef5f2;
+    border: 1px solid #d7e7e0;
+    border-radius: 8px;
+    padding: 0.15rem 0.45rem;
+}
+
+@media (max-width: 900px) {
+    .hero,
+    .detail-grid,
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-cta {
+        align-items: flex-start;
+    }
+}

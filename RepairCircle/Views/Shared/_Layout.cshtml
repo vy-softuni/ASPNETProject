@@ -24,6 +24,7 @@
                     <a asp-controller="Favorites" asp-action="Index">Favorites</a>
                 }
                 <a asp-controller="Home" asp-action="Contact">Contact</a>
+                <a asp-controller="Home" asp-action="TestingGuide">Testing guide</a>
                 @if (User.IsInRole("Administrator"))
                 {
                     <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
@@ -48,6 +49,7 @@
                 <a asp-controller="Tools" asp-action="Index">Browse tools</a>
                 <a asp-controller="RepairRequests" asp-action="Create">Request a repair</a>
                 <a asp-controller="Volunteers" asp-action="BecomeOne">Become a volunteer</a>
+                <a asp-controller="Home" asp-action="TestingGuide">Testing guide</a>
             </div>
         </div>
     </footer>

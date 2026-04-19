@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "Testing Guide";
+}
+
+<section class="page-header">
+    <span class="eyebrow">Step 12</span>
+    <h1>Testing and presentation guide</h1>
+    <p class="lead">Use this page during development, manual testing, and your final demonstration. It groups the main flows so you can show the platform clearly and check that the requirements are covered.</p>
+</section>
+
+<section class="grid grid-3 top-margin">
+    <article class="card checklist-card">
+        <span class="eyebrow">Before running</span>
+        <h2>Environment checklist</h2>
+        <ul class="feature-list">
+            <li>Restore NuGet packages.</li>
+            <li>Create the first EF migration.</li>
+            <li>Run <code>Update-Database</code>.</li>
+            <li>Confirm seeded roles and sample accounts exist.</li>
+            <li>Verify the uploads folders under <code>wwwroot/uploads</code>.</li>
+        </ul>
+    </article>
+
+    <article class="card checklist-card">
+        <span class="eyebrow">Core user flow</span>
+        <h2>User demo path</h2>
+        <ol class="flow-list">
+            <li>Register or sign in as a seeded user.</li>
+            <li>Browse tools and filter by category or availability.</li>
+            <li>Open a tool details page and toggle favorite with AJAX.</li>
+            <li>Create a borrow request and verify the generated reference.</li>
+            <li>Submit a repair request with an image and then open its details page.</li>
+        </ol>
+    </article>
+
+    <article class="card checklist-card">
+        <span class="eyebrow">Volunteer flow</span>
+        <h2>Volunteer demo path</h2>
+        <ol class="flow-list">
+            <li>Open the volunteer listing and search by skill.</li>
+            <li>Use the volunteer sign-up page and test validation errors.</li>
+            <li>Review a repair session and confirm available slots display correctly.</li>
+            <li>Show that approved volunteer data appears on the public side.</li>
+        </ol>
+    </article>
+</section>
+
+<section class="grid grid-2 top-margin">
+    <article class="card checklist-card">
+        <span class="eyebrow">Administrator flow</span>
+        <h2>Admin demo path</h2>
+        <ol class="flow-list">
+            <li>Sign in with the seeded administrator account.</li>
+            <li>Open the dedicated admin dashboard and charts.</li>
+            <li>Create or edit a tool with image upload.</li>
+            <li>Manage a repair request status or volunteer assignment.</li>
+            <li>Open users, sessions, announcements, and locations pages.</li>
+            <li>Observe live SignalR notifications when a new request is created.</li>
+        </ol>
+    </article>
+
+    <article class="card checklist-card">
+        <span class="eyebrow">Bonus features</span>
+        <h2>What to show in the presentation</h2>
+        <ul class="feature-list">
+            <li><strong>SignalR:</strong> live tool availability and admin notifications.</li>
+            <li><strong>Image upload:</strong> tool photos and repair request photos.</li>
+            <li><strong>Charts:</strong> dashboard charts in the admin area.</li>
+            <li><strong>Reference generation:</strong> borrow and repair request references.</li>
+            <li><strong>Local storage:</strong> recent tools, saved filters, request draft.</li>
+            <li><strong>Google Maps:</strong> map blocks on public details pages.</li>
+            <li><strong>AJAX:</strong> favorites and feedback updates without full page reload.</li>
+        </ul>
+    </article>
+</section>
+
+<section class="card top-margin">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Manual QA</span>
+            <h2>Suggested test cases</h2>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <div>
+            <h3>Validation</h3>
+            <ul class="feature-list">
+                <li>Submit empty required fields.</li>
+                <li>Use invalid date ranges on borrow and session forms.</li>
+                <li>Try unsupported image types or files over the size limit.</li>
+                <li>Check that enum/status dropdowns reject invalid values.</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Security and access</h3>
+            <ul class="feature-list">
+                <li>Open admin routes as a normal user and confirm access denied.</li>
+                <li>Test that state-changing actions require authentication.</li>
+                <li>Confirm forms include anti-forgery protection.</li>
+                <li>Verify user-generated text is HTML-encoded in the views.</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Error handling</h3>
+            <ul class="feature-list">
+                <li>Navigate to a missing URL and confirm the custom 404 page appears.</li>
+                <li>Trigger a controlled server-side error path and check the 500 page.</li>
+                <li>Check that request IDs are shown on the error pages.</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Search, filtering, and pagination</h3>
+            <ul class="feature-list">
+                <li>Change filters and then move between pages.</li>
+                <li>Confirm query-string values remain in pager links.</li>
+                <li>Check empty-state messages when filters return no results.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="card top-margin">
+    <span class="eyebrow">Seeded accounts</span>
+    <h2>Quick sign-in accounts</h2>
+    <div class="grid grid-3">
+        <div class="credential-card">
+            <h3>Administrator</h3>
+            <p><strong>Email:</strong> admin@repaircircle.local</p>
+            <p><strong>Password:</strong> Admin123!</p>
+        </div>
+        <div class="credential-card">
+            <h3>Volunteer</h3>
+            <p><strong>Email:</strong> maria.ivanova@repaircircle.local</p>
+            <p><strong>Password:</strong> Volunteer123!</p>
+        </div>
+        <div class="credential-card">
+            <h3>User</h3>
+            <p><strong>Email:</strong> elena.georgieva@repaircircle.local</p>
+            <p><strong>Password:</strong> User123!</p>
+        </div>
+    </div>
+</section>
+
+<section class="page-cta top-margin">
+    <div>
+        <span class="eyebrow">Next action</span>
+        <h2>Use this page as your presentation script</h2>
+        <p class="lead">You can walk through the cards from top to bottom during the demo and also use the same checklist while testing after each change.</p>
+    </div>
+    <div class="actions">
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to home</a>
+        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Open tools</a>
+        <a class="btn btn-secondary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Open admin dashboard</a>
+    </div>
+</section>
