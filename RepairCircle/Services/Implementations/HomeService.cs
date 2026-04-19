@@ -24,7 +24,7 @@ public class HomeService : IHomeService
 
         var activeRepairRequestsCount = await dbContext.RepairRequests
             .AsNoTracking()
-            .CountAsync(r => r.Status != RepairRequestStatus.Completed && r.Status != RepairRequestStatus.Cancelled);
+            .CountAsync(r => r.Status != RepairRequestStatus.Repaired && r.Status != RepairRequestStatus.Cancelled);
 
         var upcomingSessionsCount = await dbContext.RepairSessions
             .AsNoTracking()

@@ -20,14 +20,7 @@ public static class ApplicationDbInitializer
 
         try
         {
-            if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
-            {
-                await dbContext.Database.MigrateAsync();
-            }
-            else
-            {
-                await dbContext.Database.EnsureCreatedAsync();
-            }
+            await dbContext.Database.MigrateAsync();
 
             await SeedRolesAsync(roleManager);
             var seededUsers = await SeedUsersAsync(userManager);
@@ -408,7 +401,7 @@ public static class ApplicationDbInitializer
         {
             var completedRequest = await dbContext.RepairRequests
                 .OrderBy(r => r.Id)
-                .FirstOrDefaultAsync(r => r.Title.Contains("Speaker", StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefaultAsync(r => EF.Functions.Like(r.Title, "%Speaker%"));
 
             if (completedRequest is not null)
             {

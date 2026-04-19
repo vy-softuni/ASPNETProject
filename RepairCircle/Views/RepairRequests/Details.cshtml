@@ -1,6 +1,15 @@
 @model RepairRequestDetailsViewModel
 @{
     ViewData["Title"] = "Repair Request Details";
+
+    var mapModel = new RepairCircle.ViewModels.Common.MapEmbedViewModel
+    {
+        Title = Model.LocationName,
+        AddressLine = Model.Address,
+        City = Model.City,
+        Latitude = Model.Latitude,
+        Longitude = Model.Longitude
+    };
 }
 
 <section class="detail-grid">
@@ -70,14 +79,7 @@
             <li>Request may be linked to a repair session.</li>
             <li>User can leave feedback after completion.</li>
         </ol>
-        <partial name="_LocationMapPartial" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
-        {
-            Title = Model.LocationName,
-            AddressLine = Model.Address,
-            City = Model.City,
-            Latitude = Model.Latitude,
-            Longitude = Model.Longitude
-        }" />
+        @await Html.PartialAsync("_LocationMapPartial", mapModel)
     </aside>
 </section>
 

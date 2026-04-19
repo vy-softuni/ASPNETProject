@@ -1,6 +1,15 @@
 @model RepairSessionDetailsViewModel
 @{
     ViewData["Title"] = "Repair Session Details";
+
+    var mapModel = new RepairCircle.ViewModels.Common.MapEmbedViewModel
+    {
+        Title = Model.LocationName,
+        AddressLine = Model.Address,
+        City = Model.City,
+        Latitude = Model.Latitude,
+        Longitude = Model.Longitude
+    };
 }
 
 <section class="detail-grid">
@@ -25,14 +34,7 @@
                 <dd>@Model.Address, @Model.City</dd>
             </div>
         </dl>
-        <partial name="_LocationMapPartial" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
-        {
-            Title = Model.LocationName,
-            AddressLine = Model.Address,
-            City = Model.City,
-            Latitude = Model.Latitude,
-            Longitude = Model.Longitude
-        }" />
+        @await Html.PartialAsync("_LocationMapPartial", mapModel)
     </article>
 
     <aside class="card detail-sidebar">

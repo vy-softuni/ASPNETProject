@@ -1,6 +1,15 @@
 @model RepairRequest
 @{
     ViewData["Title"] = "Manage Repair Request";
+
+    var mapModel = new RepairCircle.ViewModels.Common.MapEmbedViewModel
+    {
+        Title = Model.Location.Name,
+        AddressLine = Model.Location.Address,
+        City = Model.Location.City,
+        Latitude = Model.Location.Latitude,
+        Longitude = Model.Location.Longitude
+    };
 }
 
 <section class="detail-grid">
@@ -78,14 +87,7 @@
                 <a class="btn btn-secondary" asp-action="Index">Back</a>
             </div>
         </form>
-        <partial name="~/Views/Shared/_LocationMapPartial.cshtml" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
-        {
-            Title = Model.Location.Name,
-            AddressLine = Model.Location.Address,
-            City = Model.Location.City,
-            Latitude = Model.Location.Latitude,
-            Longitude = Model.Location.Longitude
-        }" />
+        @await Html.PartialAsync("~/Views/Shared/_LocationMapPartial.cshtml", mapModel)
     </aside>
 </section>
 
