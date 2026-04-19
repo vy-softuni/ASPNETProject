@@ -1000,3 +1000,35 @@ th {
     object-fit: cover;
     border-radius: 0.85rem;
 }
+
+
+.admin-chart-card {
+    min-height: 22rem;
+}
+
+.admin-chart-card canvas {
+    width: 100% !important;
+    height: 18rem !important;
+}
+
+.admin-chart-metrics {
+    margin-top: 1.25rem;
+}
+
+.compact-stat {
+    min-height: 8.5rem;
+}
+
+.admin-chart-notes {
+    min-height: 22rem;
+}
+
+.admin-notes-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-muted, #556070);
+}
+
+.admin-notes-list li + li {
+    margin-top: 0.65rem;
+}

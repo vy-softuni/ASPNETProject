@@ -1,3 +1,4 @@
+@using System.Text.Json
 @model DashboardStatsViewModel
 @{
     ViewData["Title"] = "Dashboard";
@@ -35,7 +36,50 @@
     </article>
 </section>
 
+<section class="grid grid-2 top-margin admin-chart-metrics">
+    <article class="card stat-box admin-stat compact-stat">
+        <span class="stat-number">@Model.RepairedRequestsCount</span>
+        <span class="stat-label">Repaired requests</span>
+    </article>
+    <article class="card stat-box admin-stat compact-stat">
+        <span class="stat-number">@Model.ActiveBorrowedToolsCount</span>
+        <span class="stat-label">Currently borrowed tools</span>
+    </article>
+</section>
+
 <section class="grid grid-2 top-margin">
+    <article class="card admin-chart-card">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Charts</span>
+                <h3>Repair requests over the last 6 months</h3>
+            </div>
+        </div>
+        <canvas id="repairRequestsChart" height="180"></canvas>
+    </article>
+
+    <article class="card admin-chart-card">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Charts</span>
+                <h3>Borrowing activity over the last 6 months</h3>
+            </div>
+        </div>
+        <canvas id="borrowRecordsChart" height="180"></canvas>
+    </article>
+</section>
+
+<section class="grid grid-2 top-margin">
+    <article class="card admin-chart-card">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Insights</span>
+                <h3>Most borrowed tool categories</h3>
+            </div>
+        </div>
+        <canvas id="toolCategoriesChart" height="220"></canvas>
+    </article>
+
     <article class="card">
         <div class="section-header">
             <div>
@@ -62,7 +106,9 @@
             </a>
         </div>
     </article>
+</section>
 
+<section class="grid grid-2 top-margin">
     <article class="card">
         <div class="section-header">
             <div>
@@ -78,4 +124,94 @@
             <li>Publish announcements for schedule changes or important notices.</li>
         </ol>
     </article>
+
+    <article class="card admin-chart-notes">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Using the dashboard</span>
+                <h3>What these charts help you spot</h3>
+            </div>
+        </div>
+        <ul class="admin-notes-list">
+            <li>Spikes in repair requests can justify scheduling extra repair sessions.</li>
+            <li>Borrowing volume helps you see when high-demand tools need maintenance or restocking.</li>
+            <li>Top borrowed categories show where the community needs the strongest lending inventory.</li>
+        </ul>
+    </article>
 </section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const repairRequestLabels = @Html.Raw(JsonSerializer.Serialize(Model.RepairRequestsLastSixMonths.Select(x => x.Label)));
+        const repairRequestValues = @Html.Raw(JsonSerializer.Serialize(Model.RepairRequestsLastSixMonths.Select(x => x.Value)));
+        const borrowRecordLabels = @Html.Raw(JsonSerializer.Serialize(Model.BorrowRecordsLastSixMonths.Select(x => x.Label)));
+        const borrowRecordValues = @Html.Raw(JsonSerializer.Serialize(Model.BorrowRecordsLastSixMonths.Select(x => x.Value)));
+        const categoryLabels = @Html.Raw(JsonSerializer.Serialize(Model.TopBorrowedToolCategories.Select(x => x.Label)));
+        const categoryValues = @Html.Raw(JsonSerializer.Serialize(Model.TopBorrowedToolCategories.Select(x => x.Value)));
+
+        const sharedOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        };
+
+        new Chart(document.getElementById('repairRequestsChart'), {
+            type: 'line',
+            data: {
+                labels: repairRequestLabels,
+                datasets: [{
+                    label: 'Repair requests',
+                    data: repairRequestValues,
+                    tension: 0.25,
+                    fill: false
+                }]
+            },
+            options: sharedOptions
+        });
+
+        new Chart(document.getElementById('borrowRecordsChart'), {
+            type: 'bar',
+            data: {
+                labels: borrowRecordLabels,
+                datasets: [{
+                    label: 'Borrow records',
+                    data: borrowRecordValues
+                }]
+            },
+            options: sharedOptions
+        });
+
+        new Chart(document.getElementById('toolCategoriesChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Borrowed categories',
+                    data: categoryValues
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}
