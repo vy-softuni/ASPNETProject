@@ -10,7 +10,7 @@
 </section>
 
 <section class="card filter-card">
-    <form method="get" class="form-grid filter-grid">
+    <form id="tool-filter-form" method="get" class="form-grid filter-grid">
         <div class="form-field">
             <label asp-for="SearchTerm">Search</label>
             <input asp-for="SearchTerm" placeholder="Drill, sewing machine, bike stand..." />
@@ -53,8 +53,11 @@
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
+            <button class="btn btn-secondary" type="button" id="save-tool-filters-button">Save these filters</button>
+            <button class="btn btn-secondary" type="button" id="clear-tool-filters-button">Forget saved filters</button>
             <a class="btn btn-secondary" asp-action="Index">Clear</a>
         </div>
+        <p id="saved-tool-filters-message" class="muted small-text local-storage-message" aria-live="polite"></p>
     </form>
 </section>
 
@@ -76,3 +79,8 @@ else
 }
 
 <partial name="_PaginationPartial" model="Model.Pagination" />
+
+
+@section Scripts {
+    <script src="~/js/tool-filters-storage.js" asp-append-version="true"></script>
+}

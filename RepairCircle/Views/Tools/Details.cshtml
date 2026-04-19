@@ -1,6 +1,17 @@
 @model ToolDetailsViewModel
 @{
     ViewData["Title"] = "Tool Details";
+
+    var recentToolPayload = new
+    {
+        id = Model.Id,
+        name = Model.Name,
+        url = Url.Action("Details", "Tools", new { id = Model.Id }),
+        categoryName = Model.CategoryName,
+        locationName = Model.LocationName,
+        imageUrl = string.IsNullOrWhiteSpace(Model.ImageUrl) ? null : Url.Content(Model.ImageUrl),
+        isAvailable = Model.IsAvailable
+    };
 }
 
 <section class="detail-grid">
@@ -69,14 +80,22 @@
         </div>
     </article>
 
-    <aside class="card detail-sidebar">
-        <h2>Borrowing guidance</h2>
-        <ul>
-            <li>Pick up the tool from the listed location.</li>
-            <li>Choose a due date when creating the borrowing record.</li>
-            <li>Availability depends on the current quantity and approval workflow.</li>
-            <li>This page now updates live when another borrowing request reserves the tool.</li>
-        </ul>
+    <aside class="detail-sidebar-stack">
+        <section class="card detail-sidebar">
+            <h2>Borrowing guidance</h2>
+            <ul>
+                <li>Pick up the tool from the listed location.</li>
+                <li>Choose a due date when creating the borrowing record.</li>
+                <li>Availability depends on the current quantity and approval workflow.</li>
+                <li>This page now updates live when another borrowing request reserves the tool.</li>
+            </ul>
+        </section>
+
+        <section class="card recent-tools-card" data-recent-tools-root hidden>
+            <h2>Recently viewed tools</h2>
+            <p class="muted small-text">Stored locally in this browser for quick return visits.</p>
+            <div class="recent-tools-list" data-recent-tools-list></div>
+        </section>
     </aside>
 </section>
 
@@ -87,6 +106,8 @@
             toolId: @Model.Id,
             initiallyAvailable: @Model.IsAvailable.ToString().ToLowerInvariant()
         };
+        window.repairCircleRecentTool = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(recentToolPayload));
     </script>
     <script src="~/js/realtime-tool-details.js" asp-append-version="true"></script>
+    <script src="~/js/recent-tools.js" asp-append-version="true"></script>
 }

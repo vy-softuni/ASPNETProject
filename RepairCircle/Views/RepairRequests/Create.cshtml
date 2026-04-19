@@ -10,9 +10,17 @@
 </section>
 
 <section class="card">
-    <form asp-action="Create" method="post" enctype="multipart/form-data">
+    <form id="repair-request-form" asp-action="Create" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="draft-tools">
+            <p id="repair-request-draft-status" class="muted small-text local-storage-message" aria-live="polite"></p>
+            <div class="actions">
+                <button class="btn btn-secondary" type="button" id="restore-repair-draft-button">Restore saved draft</button>
+                <button class="btn btn-secondary" type="button" id="clear-repair-draft-button">Discard saved draft</button>
+            </div>
+        </div>
 
         <div class="form-grid">
             <div class="form-field form-field-wide">
@@ -79,4 +87,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/repair-request-draft.js" asp-append-version="true"></script>
 }
