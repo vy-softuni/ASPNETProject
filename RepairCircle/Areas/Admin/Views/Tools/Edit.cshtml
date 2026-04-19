@@ -4,7 +4,7 @@
 }
 <section class="card">
     <h1>Edit tool</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <input asp-for="Id" type="hidden" />
         <partial name="~/Areas/Admin/Views/Shared/_ToolFormPartial.cshtml" model="Model" />

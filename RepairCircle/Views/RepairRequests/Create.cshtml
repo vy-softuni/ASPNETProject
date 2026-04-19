@@ -10,7 +10,7 @@
 </section>
 
 <section class="card">
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
@@ -47,8 +47,15 @@
 
             <div class="form-field form-field-wide">
                 <label asp-for="Input.ImageUrl"></label>
-                <input asp-for="Input.ImageUrl" type="url" placeholder="Optional image URL for the broken item" />
+                <input asp-for="Input.ImageUrl" placeholder="Optional external image URL or existing path" />
                 <span asp-validation-for="Input.ImageUrl"></span>
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label asp-for="Input.UploadedImage"></label>
+                <input asp-for="Input.UploadedImage" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
+                <span asp-validation-for="Input.UploadedImage"></span>
+                <small class="muted small-text">Optional. Upload a clear photo of the item to help volunteers evaluate the repair.</small>
             </div>
 
             <div class="form-field form-field-wide">

@@ -15,10 +15,9 @@ public class Tool : BaseEntity
     [StringLength(1500, MinimumLength = 10, ErrorMessage = "Description must be between 10 and 1500 characters.")]
     public string Description { get; set; } = null!;
 
-    [Display(Name = "Image URL")]
+    [Display(Name = "Image path or URL")]
     [StringLength(255, ErrorMessage = "Image URL cannot exceed 255 characters.")]
-    [Url(ErrorMessage = "Please enter a valid image URL.")]
-    public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
     [Display(Name = "Condition")]
     public ToolCondition Condition { get; set; } = ToolCondition.Good;

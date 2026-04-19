@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
-using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
+using RepairCircle.Services.Interfaces;
 using RepairCircle.ViewModels.Common;
 
 namespace RepairCircle.Areas.Admin.Controllers;
@@ -14,10 +15,12 @@ namespace RepairCircle.Areas.Admin.Controllers;
 public class ToolsController : Controller
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly IFileStorageService fileStorageService;
 
-    public ToolsController(ApplicationDbContext dbContext)
+    public ToolsController(ApplicationDbContext dbContext, IFileStorageService fileStorageService)
     {
         this.dbContext = dbContext;
+        this.fileStorageService = fileStorageService;
     }
 
     public async Task<IActionResult> Index(string? searchTerm, int? categoryId, int? locationId, bool? onlyAvailable, int page = 1)
@@ -91,12 +94,22 @@ public class ToolsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Tool model)
+    public async Task<IActionResult> Create(Tool model, IFormFile? imageFile)
     {
+        if (!fileStorageService.TryValidateImage(imageFile, out var imageValidationError))
+        {
+            ModelState.AddModelError(nameof(model.ImageUrl), imageValidationError);
+        }
+
         if (!ModelState.IsValid)
         {
             await PopulateLookupsAsync(model.ToolCategoryId, model.LocationId);
             return View(model);
+        }
+
+        if (imageFile is not null && imageFile.Length > 0)
+        {
+            model.ImageUrl = await fileStorageService.SaveImageAsync(imageFile, "tools");
         }
 
         await dbContext.Tools.AddAsync(model);
@@ -121,11 +134,16 @@ public class ToolsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, Tool model)
+    public async Task<IActionResult> Edit(int id, Tool model, IFormFile? imageFile)
     {
         if (id != model.Id)
         {
             return BadRequest();
+        }
+
+        if (!fileStorageService.TryValidateImage(imageFile, out var imageValidationError))
+        {
+            ModelState.AddModelError(nameof(model.ImageUrl), imageValidationError);
         }
 
         if (!ModelState.IsValid)
@@ -142,7 +160,16 @@ public class ToolsController : Controller
 
         tool.Name = model.Name;
         tool.Description = model.Description;
-        tool.ImageUrl = model.ImageUrl;
+        if (imageFile is not null && imageFile.Length > 0)
+        {
+            fileStorageService.DeleteIfLocalUpload(tool.ImageUrl);
+            tool.ImageUrl = await fileStorageService.SaveImageAsync(imageFile, "tools");
+        }
+        else
+        {
+            tool.ImageUrl = model.ImageUrl;
+        }
+
         tool.Condition = model.Condition;
         tool.IsAvailable = model.IsAvailable;
         tool.Quantity = model.Quantity;
@@ -163,6 +190,7 @@ public class ToolsController : Controller
         var tool = await dbContext.Tools.FindAsync(id);
         if (tool is not null)
         {
+            fileStorageService.DeleteIfLocalUpload(tool.ImageUrl);
             dbContext.Tools.Remove(tool);
             await dbContext.SaveChangesAsync();
         }

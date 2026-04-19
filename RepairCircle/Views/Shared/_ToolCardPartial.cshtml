@@ -1,5 +1,9 @@
 @model ToolListItemViewModel
 <article class="card item-card tool-card">
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <img class="item-card-image" src="@Url.Content(Model.ImageUrl)" alt="Image of @Model.Name" />
+    }
     <div class="item-card-body">
         <div class="item-card-topline">
             <span class="badge">@Model.CategoryName</span>

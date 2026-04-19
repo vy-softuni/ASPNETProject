@@ -20,10 +20,9 @@ public class RepairRequest : BaseEntity
     [StringLength(80, MinimumLength = 3, ErrorMessage = "Item type must be between 3 and 80 characters.")]
     public string ItemType { get; set; } = null!;
 
-    [Display(Name = "Image URL")]
+    [Display(Name = "Image path or URL")]
     [StringLength(255, ErrorMessage = "Image URL cannot exceed 255 characters.")]
-    [Url(ErrorMessage = "Please enter a valid image URL.")]
-    public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
     [Display(Name = "Status")]
     public RepairRequestStatus Status { get; set; } = RepairRequestStatus.Submitted;

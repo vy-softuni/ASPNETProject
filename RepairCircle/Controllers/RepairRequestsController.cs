@@ -9,10 +9,12 @@ namespace RepairCircle.Controllers;
 public class RepairRequestsController : Controller
 {
     private readonly IRepairRequestService repairRequestService;
+    private readonly IFileStorageService fileStorageService;
 
-    public RepairRequestsController(IRepairRequestService repairRequestService)
+    public RepairRequestsController(IRepairRequestService repairRequestService, IFileStorageService fileStorageService)
     {
         this.repairRequestService = repairRequestService;
+        this.fileStorageService = fileStorageService;
     }
 
     public async Task<IActionResult> Index(string? searchTerm, string? status, int? locationId, int page = 1)
@@ -59,11 +61,21 @@ public class RepairRequestsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(RepairRequestCreateViewModel model)
     {
+        if (!fileStorageService.TryValidateImage(model.Input.UploadedImage, out var imageValidationError))
+        {
+            ModelState.AddModelError("Input.UploadedImage", imageValidationError);
+        }
+
         if (!ModelState.IsValid)
         {
             var refreshedModel = await repairRequestService.GetCreateModelAsync();
             refreshedModel.Input = model.Input;
             return View(refreshedModel);
+        }
+
+        if (model.Input.UploadedImage is not null && model.Input.UploadedImage.Length > 0)
+        {
+            model.Input.ImageUrl = await fileStorageService.SaveImageAsync(model.Input.UploadedImage, "repair-requests");
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

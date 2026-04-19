@@ -15,9 +15,25 @@
 
     <div class="form-field form-field-wide">
         <label asp-for="ImageUrl"></label>
-        <input asp-for="ImageUrl" type="url" placeholder="https://example.com/tool-image.jpg" />
+        <input asp-for="ImageUrl" placeholder="https://example.com/tool-image.jpg or /uploads/tools/example.jpg" />
         <span asp-validation-for="ImageUrl"></span>
     </div>
+
+    <div class="form-field form-field-wide">
+        <label for="imageFile">Upload image</label>
+        <input id="imageFile" name="imageFile" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
+        <small class="muted small-text">Optional. Supported formats: JPG, PNG, WEBP, GIF. Maximum size: 5 MB.</small>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <div class="form-field form-field-wide">
+            <div class="image-preview-card">
+                <span class="muted small-text">Current image</span>
+                <img class="uploaded-image-preview" src="@Url.Content(Model.ImageUrl)" alt="Current tool image for @Model.Name" />
+            </div>
+        </div>
+    }
 
     <div class="form-field">
         <label asp-for="Condition"></label>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace RepairCircle.ViewModels.RepairRequests;
@@ -19,10 +20,12 @@ public class RepairRequestCreateInputModel
     [StringLength(80, MinimumLength = 3, ErrorMessage = "The item type must be between 3 and 80 characters.")]
     public string ItemType { get; set; } = string.Empty;
 
-    [Display(Name = "Image URL")]
-    [StringLength(255, ErrorMessage = "The image URL cannot be longer than 255 characters.")]
-    [Url(ErrorMessage = "Please enter a valid image URL.")]
+    [Display(Name = "Image path or URL")]
+    [StringLength(255, ErrorMessage = "The image path or URL cannot be longer than 255 characters.")]
     public string? ImageUrl { get; set; }
+
+    [Display(Name = "Upload item photo")]
+    public IFormFile? UploadedImage { get; set; }
 
     [Display(Name = "Location")]
     [Range(1, int.MaxValue, ErrorMessage = "Please choose a location.")]

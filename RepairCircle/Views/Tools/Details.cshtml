@@ -10,6 +10,11 @@
             <span id="tool-availability-badge" class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
         </div>
         <h1>@Model.Name</h1>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <img class="detail-image" src="@Url.Content(Model.ImageUrl)" alt="Image of @Model.Name" />
+        }
         <p class="lead">@Model.Description</p>
 
         <dl class="meta-list">
