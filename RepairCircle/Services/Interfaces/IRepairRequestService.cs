@@ -19,7 +19,7 @@ public interface IRepairRequestService
         int page = 1,
         int pageSize = 6);
 
-    Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id);
+    Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null);
     Task<RepairRequestCreateViewModel> GetCreateModelAsync();
     Task<int> CreateAsync(RepairRequestCreateInputModel model, string userId);
 }

@@ -13,5 +13,5 @@ public interface IToolService
         int page = 1,
         int pageSize = 9);
 
-    Task<ToolDetailsViewModel?> GetByIdAsync(int id);
+    Task<ToolDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null);
 }

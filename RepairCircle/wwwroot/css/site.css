@@ -1203,3 +1203,63 @@ th {
     padding: 0.55rem 0.9rem;
     font-size: 0.9rem;
 }
+
+
+.ajax-status-message {
+    margin: 0 0 1rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.9rem;
+    font-weight: 600;
+}
+
+.ajax-status-success {
+    background: #ecfdf3;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.ajax-status-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.loading-panel {
+    padding: 1rem;
+    border: 1px dashed #cbd5e1;
+    border-radius: 1rem;
+    background: #f8fafc;
+    color: #475569;
+}
+
+.ajax-feedback-form-host {
+    margin-bottom: 1rem;
+}
+
+.ajax-feedback-form-card {
+    border: 1px solid #dbeafe;
+    background: #f8fbff;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.align-center-gap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.compact-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.top-margin-sm {
+    margin-top: 0.75rem;
+}

@@ -17,4 +17,5 @@ public class ToolDetailsViewModel
     public decimal? Longitude { get; set; }
     public int FavoritesCount { get; set; }
     public int BorrowRecordsCount { get; set; }
+    public bool IsFavoritedByCurrentUser { get; set; }
 }

@@ -19,4 +19,5 @@ public class RepairRequestDetailsViewModel
     public string? RepairSessionTitle { get; set; }
     public DateTime RequestedDate { get; set; }
     public IReadOnlyCollection<RepairRequestFeedbackViewModel> Feedback { get; set; } = Array.Empty<RepairRequestFeedbackViewModel>();
+    public bool CanLeaveFeedback { get; set; }
 }

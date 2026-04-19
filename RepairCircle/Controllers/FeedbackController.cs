@@ -16,6 +16,14 @@ public class FeedbackController : Controller
         this.feedbackService = feedbackService;
     }
 
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> ListPartial(int repairRequestId)
+    {
+        var model = await feedbackService.GetForRepairRequestAsync(repairRequestId);
+        return PartialView("_FeedbackListPartial", model);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Create(int repairRequestId)
     {
@@ -32,6 +40,24 @@ public class FeedbackController : Controller
         }
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CreateInline(int repairRequestId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        var model = await feedbackService.GetCreateModelAsync(repairRequestId, userId);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        return PartialView("_AjaxFeedbackFormPartial", model);
     }
 
     [HttpPost]
@@ -67,6 +93,41 @@ public class FeedbackController : Controller
         TempData["StatusMessage"] = "Feedback saved successfully.";
         TempData["StatusType"] = "success";
         return RedirectToAction("Details", "RepairRequests", new { id = model.Input.RepairRequestId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateInline(FeedbackFormViewModel model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new { success = false, message = "You must be logged in to leave feedback." });
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var invalidModel = await feedbackService.GetCreateModelAsync(model.Input.RepairRequestId, userId) ?? model;
+            invalidModel.Input = model.Input;
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            return PartialView("_AjaxFeedbackFormPartial", invalidModel);
+        }
+
+        var feedbackId = await feedbackService.CreateAsync(userId, model.Input);
+        if (!feedbackId.HasValue)
+        {
+            ModelState.AddModelError(string.Empty, "Feedback could not be saved. Make sure the repair request belongs to you and you have not already left feedback.");
+            var refreshedModel = await feedbackService.GetCreateModelAsync(model.Input.RepairRequestId, userId) ?? model;
+            refreshedModel.Input = model.Input;
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            return PartialView("_AjaxFeedbackFormPartial", refreshedModel);
+        }
+
+        return Json(new
+        {
+            success = true,
+            message = "Feedback saved successfully."
+        });
     }
 
     [HttpGet]

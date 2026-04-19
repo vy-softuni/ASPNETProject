@@ -129,7 +129,7 @@ public class ToolService : IToolService
         };
     }
 
-    public async Task<ToolDetailsViewModel?> GetByIdAsync(int id)
+    public async Task<ToolDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null)
     {
         return await dbContext.Tools
             .AsNoTracking()
@@ -154,7 +154,8 @@ public class ToolService : IToolService
                 Latitude = t.Location.Latitude,
                 Longitude = t.Location.Longitude,
                 FavoritesCount = t.Favorites.Count,
-                BorrowRecordsCount = t.BorrowRecords.Count
+                BorrowRecordsCount = t.BorrowRecords.Count,
+                IsFavoritedByCurrentUser = currentUserId != null && t.Favorites.Any(f => f.UserId == currentUserId)
             })
             .FirstOrDefaultAsync();
     }

@@ -112,4 +112,44 @@ public class FavoriteService : IFavoriteService
         dbContext.Favorites.Remove(favorite);
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task<FavoriteToggleResultViewModel?> ToggleAsync(string userId, int toolId)
+    {
+        var toolExists = await dbContext.Tools.AnyAsync(t => t.Id == toolId);
+        if (!toolExists)
+        {
+            return null;
+        }
+
+        var favorite = await dbContext.Favorites.FirstOrDefaultAsync(f => f.UserId == userId && f.ToolId == toolId);
+        var isFavorited = false;
+        var message = string.Empty;
+
+        if (favorite is null)
+        {
+            await dbContext.Favorites.AddAsync(new Favorite
+            {
+                UserId = userId,
+                ToolId = toolId
+            });
+            isFavorited = true;
+            message = "Tool added to favorites.";
+        }
+        else
+        {
+            dbContext.Favorites.Remove(favorite);
+            message = "Tool removed from favorites.";
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var favoritesCount = await dbContext.Favorites.CountAsync(f => f.ToolId == toolId);
+
+        return new FavoriteToggleResultViewModel
+        {
+            IsFavorited = isFavorited,
+            FavoritesCount = favoritesCount,
+            Message = message
+        };
+    }
 }

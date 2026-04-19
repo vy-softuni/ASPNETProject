@@ -3,6 +3,7 @@ using RepairCircle.Data;
 using RepairCircle.Data.Models;
 using RepairCircle.Services.Interfaces;
 using RepairCircle.ViewModels.Feedbacks;
+using RepairCircle.ViewModels.RepairRequests;
 
 namespace RepairCircle.Services.Implementations;
 
@@ -110,4 +111,22 @@ public class FeedbackService : IFeedbackService
         await dbContext.SaveChangesAsync();
         return true;
     }
+
+public async Task<IReadOnlyCollection<RepairRequestFeedbackViewModel>> GetForRepairRequestAsync(int repairRequestId)
+{
+    return await dbContext.Feedbacks
+        .AsNoTracking()
+        .Include(f => f.User)
+        .Where(f => f.RepairRequestId == repairRequestId)
+        .OrderByDescending(f => f.CreatedOn)
+        .Select(f => new RepairRequestFeedbackViewModel
+        {
+            UserName = f.User.FullName ?? f.User.UserName ?? f.User.Email ?? "Unknown user",
+            Rating = f.Rating,
+            Comment = f.Comment,
+            CreatedOn = f.CreatedOn
+        })
+        .ToListAsync();
+}
+
 }

@@ -58,4 +58,29 @@ public class FavoritesController : Controller
         TempData["StatusType"] = "success";
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleAjax(int toolId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new { success = false, message = "You must be logged in to manage favorites." });
+        }
+
+        var result = await favoriteService.ToggleAsync(userId, toolId);
+        if (result is null)
+        {
+            return NotFound(new { success = false, message = "Tool not found." });
+        }
+
+        return Json(new
+        {
+            success = true,
+            isFavorited = result.IsFavorited,
+            favoritesCount = result.FavoritesCount,
+            message = result.Message
+        });
+    }
 }

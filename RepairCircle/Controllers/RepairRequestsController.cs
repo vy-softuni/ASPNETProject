@@ -39,7 +39,11 @@ public class RepairRequestsController : Controller
 
     public async Task<IActionResult> Details(int id)
     {
-        var model = await repairRequestService.GetByIdAsync(id);
+        var userId = User.Identity?.IsAuthenticated == true
+            ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+            : null;
+
+        var model = await repairRequestService.GetByIdAsync(id, userId);
         if (model is null)
         {
             return NotFound();

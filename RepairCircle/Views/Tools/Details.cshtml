@@ -39,7 +39,7 @@
             </div>
             <div>
                 <dt>Favorites</dt>
-                <dd>@Model.FavoritesCount</dd>
+                <dd id="tool-favorites-count">@Model.FavoritesCount</dd>
             </div>
             <div>
                 <dt>Borrow records</dt>
@@ -68,14 +68,26 @@
             Waiting for live availability updates.
         </div>
 
+        <div id="favorite-toggle-status" class="ajax-status-message" hidden></div>
+
         <div class="actions">
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a class="btn btn-primary" asp-controller="BorrowRecords" asp-action="Create" asp-route-toolId="@Model.Id">Borrow this tool</a>
-                <form asp-controller="Favorites" asp-action="Add" method="post" class="inline-form">
+                <form asp-controller="Favorites"
+                      asp-action="ToggleAjax"
+                      method="post"
+                      class="inline-form"
+                      id="favorite-toggle-form"
+                      data-ajax-favorite-form
+                      data-tool-id="@Model.Id"
+                      data-add-label="Add to favorites"
+                      data-remove-label="Remove from favorites">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="toolId" value="@Model.Id" />
-                    <button type="submit" class="btn btn-secondary">Add to favorites</button>
+                    <button type="submit" class="btn btn-secondary" data-favorite-toggle-button>
+                        @(Model.IsFavoritedByCurrentUser ? "Remove from favorites" : "Add to favorites")
+                    </button>
                 </form>
             }
             <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Back to tools</a>
@@ -112,4 +124,5 @@
     </script>
     <script src="~/js/realtime-tool-details.js" asp-append-version="true"></script>
     <script src="~/js/recent-tools.js" asp-append-version="true"></script>
+    <script src="~/js/ajax-favorites.js" asp-append-version="true"></script>
 }

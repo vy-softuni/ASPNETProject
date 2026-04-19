@@ -1,0 +1,17 @@
+@model FeedbackFormViewModel
+
+<div class="ajax-feedback-form-card">
+    <div class="item-card-topline">
+        <strong>Leave feedback</strong>
+        <span class="muted small-text">For @Model.RepairRequestTitle</span>
+    </div>
+
+    <form asp-controller="Feedback" asp-action="CreateInline" method="post" data-ajax-feedback-form>
+        @Html.AntiForgeryToken()
+        <partial name="_FeedbackFormPartial" model="Model" />
+        <div class="actions top-margin-sm">
+            <button type="submit" class="btn btn-primary">Submit feedback</button>
+            <button type="button" class="btn btn-secondary" data-close-feedback-form>Cancel</button>
+        </div>
+    </form>
+</div>

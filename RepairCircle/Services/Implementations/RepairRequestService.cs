@@ -47,7 +47,7 @@ public class RepairRequestService : IRepairRequestService
             pageSize);
     }
 
-    public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id)
+    public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null)
     {
         return await dbContext.RepairRequests
             .AsNoTracking()
@@ -88,7 +88,10 @@ public class RepairRequestService : IRepairRequestService
                         Comment = f.Comment,
                         CreatedOn = f.CreatedOn
                     })
-                    .ToList()
+                    .ToList(),
+                CanLeaveFeedback = currentUserId != null &&
+                    r.SubmittedByUserId == currentUserId &&
+                    !r.Feedbacks.Any(f => f.UserId == currentUserId)
             })
             .FirstOrDefaultAsync();
     }

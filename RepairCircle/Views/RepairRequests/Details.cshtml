@@ -47,7 +47,15 @@
         @if (User.Identity?.IsAuthenticated == true)
         {
             <div class="actions">
-                <a class="btn btn-primary" asp-controller="Feedback" asp-action="Create" asp-route-repairRequestId="@Model.Id">Leave feedback</a>
+                @if (Model.CanLeaveFeedback)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-open-feedback-form
+                            data-form-url="@Url.Action("CreateInline", "Feedback", new { repairRequestId = Model.Id })">
+                        Leave feedback
+                    </button>
+                }
                 <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="MyRequests">My requests</a>
             </div>
         }
@@ -73,7 +81,27 @@
     </aside>
 </section>
 
-<section class="card top-margin">
-    <h2>Feedback</h2>
-    <partial name="_FeedbackListPartial" model="Model.Feedback" />
+<section class="card top-margin" id="feedback-ajax-root"
+         data-list-url="@Url.Action("ListPartial", "Feedback", new { repairRequestId = Model.Id })">
+    <div class="item-card-topline align-center-gap">
+        <h2 class="no-margin">Feedback</h2>
+        <div class="actions compact-actions">
+            <button type="button" class="btn btn-secondary btn-sm" data-reload-feedback-list>Refresh</button>
+        </div>
+    </div>
+
+    <div class="ajax-status-message" data-feedback-status hidden></div>
+    <div class="ajax-feedback-form-host" data-feedback-form-host></div>
+    <div class="ajax-feedback-list-host" data-feedback-list-host>
+        <div class="loading-panel">Loading feedback…</div>
+    </div>
 </section>
+
+@section Scripts {
+    <script>
+        window.repairCircleFeedbackOptions = {
+            repairRequestId: @Model.Id
+        };
+    </script>
+    <script src="~/js/repair-request-feedback.js" asp-append-version="true"></script>
+}

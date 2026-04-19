@@ -13,4 +13,5 @@ public interface IFavoriteService
 
     Task AddAsync(string userId, int toolId);
     Task RemoveAsync(string userId, int toolId);
+    Task<FavoriteToggleResultViewModel?> ToggleAsync(string userId, int toolId);
 }

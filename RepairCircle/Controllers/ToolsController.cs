@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using RepairCircle.Services.Interfaces;
 
@@ -20,7 +21,11 @@ public class ToolsController : Controller
 
     public async Task<IActionResult> Details(int id)
     {
-        var model = await toolService.GetByIdAsync(id);
+        var userId = User.Identity?.IsAuthenticated == true
+            ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+            : null;
+
+        var model = await toolService.GetByIdAsync(id, userId);
         if (model is null)
         {
             return NotFound();
