@@ -11,10 +11,12 @@ namespace RepairCircle.Services.Implementations;
 public class RepairRequestService : IRepairRequestService
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly IRealtimeNotificationService realtimeNotificationService;
 
-    public RepairRequestService(ApplicationDbContext dbContext)
+    public RepairRequestService(ApplicationDbContext dbContext, IRealtimeNotificationService realtimeNotificationService)
     {
         this.dbContext = dbContext;
+        this.realtimeNotificationService = realtimeNotificationService;
     }
 
     public async Task<RepairRequestIndexViewModel> GetAllAsync(
@@ -134,6 +136,8 @@ public class RepairRequestService : IRepairRequestService
             }
         }
 
+        var now = DateTime.UtcNow;
+
         var repairRequest = new RepairRequest
         {
             Title = model.Title.Trim(),
@@ -143,11 +147,23 @@ public class RepairRequestService : IRepairRequestService
             SubmittedByUserId = userId,
             LocationId = model.LocationId,
             RepairSessionId = model.RepairSessionId,
-            RequestedDate = DateTime.UtcNow
+            RequestedDate = now
         };
 
         await dbContext.RepairRequests.AddAsync(repairRequest);
         await dbContext.SaveChangesAsync();
+
+        var user = await dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        var location = await dbContext.Locations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == model.LocationId);
+
+        var submittedBy = user?.FullName ?? user?.UserName ?? user?.Email ?? "A user";
+        var locationName = location is null ? "the selected location" : $"{location.Name} ({location.City})";
+
+        await realtimeNotificationService.NotifyAdminNewRepairRequestAsync(repairRequest.Title, submittedBy, locationName, now);
 
         return repairRequest.Id;
     }

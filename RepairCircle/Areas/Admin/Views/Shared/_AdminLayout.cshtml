@@ -20,6 +20,15 @@
 
             <partial name="~/Areas/Admin/Views/Shared/_AdminNavPartial.cshtml" />
 
+            <section class="admin-live-notifications card">
+                <div class="admin-live-notifications-header">
+                    <h2>Live notifications</h2>
+                    <span class="badge">SignalR</span>
+                </div>
+                <p id="admin-live-notifications-empty" class="muted-text">Waiting for live admin updates.</p>
+                <ul id="admin-live-notifications" class="admin-live-notifications-list"></ul>
+            </section>
+
             <div class="admin-sidebar-footer card">
                 <p><strong>Signed in as</strong></p>
                 <p>@(User.Identity?.Name ?? "Administrator")</p>
@@ -48,6 +57,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="~/js/admin-notifications.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

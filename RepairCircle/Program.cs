@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data;
 using RepairCircle.Data.Models;
 using RepairCircle.Data.Seed;
+using RepairCircle.Hubs;
 using RepairCircle.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddRepairCircleServices();
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -67,6 +69,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapHub<RepairCircleHub>("/hubs/repair-circle");
 app.MapRazorPages();
 
 await ApplicationDbInitializer.InitializeAsync(app);

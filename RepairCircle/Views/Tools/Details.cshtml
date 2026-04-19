@@ -7,7 +7,7 @@
     <article class="card detail-primary">
         <div class="item-card-topline">
             <span class="badge">@Model.CategoryName</span>
-            <span class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
+            <span id="tool-availability-badge" class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
         </div>
         <h1>@Model.Name</h1>
         <p class="lead">@Model.Description</p>
@@ -19,7 +19,7 @@
             </div>
             <div>
                 <dt>Quantity</dt>
-                <dd>@Model.Quantity</dd>
+                <dd id="tool-quantity">@Model.Quantity</dd>
             </div>
             <div>
                 <dt>Favorites</dt>
@@ -46,6 +46,10 @@
             </div>
         }
 
+        <div id="tool-live-status" class="live-status-box">
+            Waiting for live availability updates.
+        </div>
+
         <div class="actions">
             @if (User.Identity?.IsAuthenticated == true)
             {
@@ -66,6 +70,18 @@
             <li>Pick up the tool from the listed location.</li>
             <li>Choose a due date when creating the borrowing record.</li>
             <li>Availability depends on the current quantity and approval workflow.</li>
+            <li>This page now updates live when another borrowing request reserves the tool.</li>
         </ul>
     </aside>
 </section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script>
+        window.repairCircleToolRealtime = {
+            toolId: @Model.Id,
+            initiallyAvailable: @Model.IsAvailable.ToString().ToLowerInvariant()
+        };
+    </script>
+    <script src="~/js/realtime-tool-details.js" asp-append-version="true"></script>
+}

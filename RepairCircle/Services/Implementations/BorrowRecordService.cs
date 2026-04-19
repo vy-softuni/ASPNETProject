@@ -11,10 +11,12 @@ namespace RepairCircle.Services.Implementations;
 public class BorrowRecordService : IBorrowRecordService
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly IRealtimeNotificationService realtimeNotificationService;
 
-    public BorrowRecordService(ApplicationDbContext dbContext)
+    public BorrowRecordService(ApplicationDbContext dbContext, IRealtimeNotificationService realtimeNotificationService)
     {
         this.dbContext = dbContext;
+        this.realtimeNotificationService = realtimeNotificationService;
     }
 
     public async Task<BorrowRecordIndexViewModel> GetUserRecordsAsync(
@@ -114,20 +116,41 @@ public class BorrowRecordService : IBorrowRecordService
             return 0;
         }
 
+        var user = await dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
         var dueDate = DateTime.SpecifyKind(model.DueDate, DateTimeKind.Utc);
+        var now = DateTime.UtcNow;
 
         var record = new BorrowRecord
         {
             ToolId = model.ToolId,
             UserId = userId,
-            BorrowDate = DateTime.UtcNow,
+            BorrowDate = now,
             DueDate = dueDate,
             Status = BorrowStatus.Pending,
-            BorrowReference = $"BOR-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}"
+            BorrowReference = $"BOR-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}"
         };
+
+        tool.Quantity -= 1;
+        tool.IsAvailable = tool.Quantity > 0;
+        tool.ModifiedOn = now;
 
         await dbContext.BorrowRecords.AddAsync(record);
         await dbContext.SaveChangesAsync();
+
+        await realtimeNotificationService.NotifyToolAvailabilityChangedAsync(
+            tool.Id,
+            tool.Quantity,
+            tool.IsAvailable,
+            tool.IsAvailable
+                ? $"A borrowing request reserved one unit. {tool.Quantity} remaining."
+                : "This tool just became unavailable.");
+
+        var requestedBy = user?.FullName ?? user?.UserName ?? user?.Email ?? "A user";
+        await realtimeNotificationService.NotifyAdminNewBorrowRecordAsync(tool.Name, record.BorrowReference, requestedBy, now);
+
         return record.Id;
     }
 }
