@@ -113,6 +113,8 @@ public class RepairSessionService : IRepairSessionService
                 LocationName = rs.Location.Name,
                 Address = rs.Location.Address,
                 City = rs.Location.City,
+                Latitude = rs.Location.Latitude,
+                Longitude = rs.Location.Longitude,
                 VolunteerNames = rs.Volunteers
                     .OrderBy(v => v.User.FullName)
                     .Select(v => v.User.FullName ?? v.User.UserName ?? v.User.Email ?? "Unknown user")

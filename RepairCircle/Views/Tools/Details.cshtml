@@ -55,12 +55,14 @@
             </div>
         </dl>
 
-        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+        <partial name="_LocationMapPartial" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
         {
-            <div class="map-note">
-                <strong>Coordinates:</strong> @Model.Latitude, @Model.Longitude
-            </div>
-        }
+            Title = Model.LocationName,
+            AddressLine = Model.Address,
+            City = Model.City,
+            Latitude = Model.Latitude,
+            Longitude = Model.Longitude
+        }" />
 
         <div id="tool-live-status" class="live-status-box">
             Waiting for live availability updates.

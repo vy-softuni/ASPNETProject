@@ -1,0 +1,33 @@
+@model RepairCircle.ViewModels.Common.MapEmbedViewModel
+
+@if (!string.IsNullOrWhiteSpace(Model.Query))
+{
+    <section class="map-card">
+        <div class="map-card-header">
+            <div>
+                <h2>Location map</h2>
+                <p class="muted small-text">Embedded Google Maps view for easier navigation to the workshop or pickup point.</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="@Model.OpenInMapsUrl" target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
+        </div>
+
+        <div class="map-frame-wrap">
+            <iframe
+                title="Map for @Model.Title"
+                src="@Model.EmbedUrl"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        @if (Model.HasCoordinates)
+        {
+            <p class="map-coordinates"><strong>Coordinates:</strong> @Model.Latitude, @Model.Longitude</p>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.AddressLine) || !string.IsNullOrWhiteSpace(Model.City))
+        {
+            <p class="map-coordinates"><strong>Address search:</strong> @Model.AddressLine @if (!string.IsNullOrWhiteSpace(Model.City)) {<text>, @Model.City</text>}</p>
+        }
+    </section>
+}

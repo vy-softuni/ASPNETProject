@@ -13,6 +13,9 @@ public class RepairRequestDetailsViewModel
     public string? AssignedVolunteer { get; set; }
     public string LocationName { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
     public string? RepairSessionTitle { get; set; }
     public DateTime RequestedDate { get; set; }
     public IReadOnlyCollection<RepairRequestFeedbackViewModel> Feedback { get; set; } = Array.Empty<RepairRequestFeedbackViewModel>();

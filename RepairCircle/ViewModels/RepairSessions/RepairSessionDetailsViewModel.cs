@@ -12,6 +12,8 @@ public class RepairSessionDetailsViewModel
     public string LocationName { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
     public IReadOnlyCollection<string> VolunteerNames { get; set; } = Array.Empty<string>();
     public IReadOnlyCollection<string> RepairRequestTitles { get; set; } = Array.Empty<string>();
 }

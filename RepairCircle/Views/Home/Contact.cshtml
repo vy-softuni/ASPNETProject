@@ -28,10 +28,22 @@
     </article>
     <article class="card">
         <h2>Community workshops</h2>
-        <p>Workshop addresses, maps, and event calendars will later be displayed here as part of the location bonus functionality.</p>
+        <p>The app can now embed Google Maps for workshop and pickup locations. Below is a demo map pointing to Sofia so the feature is visible even before you add more location pages.</p>
         <div class="actions">
             <a class="btn btn-secondary" asp-controller="RepairSessions" asp-action="Index">View repair sessions</a>
             <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse tools</a>
         </div>
     </article>
+</section>
+
+
+<section class="card top-margin">
+    <partial name="_LocationMapPartial" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
+    {
+        Title = "RepairCircle Sofia Demo Location",
+        AddressLine = "Sofia Center",
+        City = "Sofia",
+        Latitude = 42.697708m,
+        Longitude = 23.321868m
+    }" />
 </section>

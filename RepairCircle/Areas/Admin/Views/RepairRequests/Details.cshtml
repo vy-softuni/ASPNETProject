@@ -78,6 +78,14 @@
                 <a class="btn btn-secondary" asp-action="Index">Back</a>
             </div>
         </form>
+        <partial name="~/Views/Shared/_LocationMapPartial.cshtml" model="new RepairCircle.ViewModels.Common.MapEmbedViewModel
+        {
+            Title = Model.LocationName,
+            AddressLine = Model.Address,
+            City = Model.City,
+            Latitude = Model.Latitude,
+            Longitude = Model.Longitude
+        }" />
     </aside>
 </section>
 

@@ -74,6 +74,9 @@ public class RepairRequestService : IRepairRequestService
                     : null,
                 LocationName = r.Location.Name,
                 City = r.Location.City,
+                Address = r.Location.Address,
+                Latitude = r.Location.Latitude,
+                Longitude = r.Location.Longitude,
                 RepairSessionTitle = r.RepairSession != null ? r.RepairSession.Title : null,
                 RequestedDate = r.RequestedDate,
                 Feedback = r.Feedbacks

@@ -1158,3 +1158,48 @@ th {
         padding: 0 0.95rem 0.95rem;
     }
 }
+
+
+.map-card {
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    padding-top: 1rem;
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.map-frame-wrap {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #f8fafc;
+}
+
+.map-frame-wrap iframe {
+    display: block;
+    width: 100%;
+    min-height: 320px;
+    border: 0;
+}
+
+.map-coordinates {
+    margin: 0.75rem 0 0;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.top-margin-half {
+    margin-top: 0.75rem;
+}
+
+.btn-sm {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+}
