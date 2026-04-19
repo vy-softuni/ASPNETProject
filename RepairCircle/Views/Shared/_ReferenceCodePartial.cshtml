@@ -1,0 +1,15 @@
+@model string
+@using RepairCircle.Common
+@{
+    var gridSize = 13;
+    var cells = ReferenceCodeGenerator.CreateVisualCells(Model, gridSize);
+}
+<div class="reference-code-card" aria-label="Reference code for @Model">
+    <div class="reference-code-grid" style="grid-template-columns: repeat(@gridSize, 1fr);">
+        @for (var i = 0; i < cells.Length; i++)
+        {
+            <span class="reference-code-cell@(cells[i] ? " is-filled" : string.Empty)"></span>
+        }
+    </div>
+    <code class="reference-code-text">@Model</code>
+</div>

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RepairCircle.Common;
 using RepairCircle.Data;
 using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
@@ -108,6 +109,31 @@ public class BorrowRecordService : IBorrowRecordService
             .FirstOrDefaultAsync();
     }
 
+    public async Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId)
+    {
+        return await dbContext.BorrowRecords
+            .AsNoTracking()
+            .Include(br => br.Tool)
+                .ThenInclude(t => t.Location)
+            .Where(br => br.Id == id && br.UserId == userId)
+            .Select(br => new BorrowRecordDetailsViewModel
+            {
+                Id = br.Id,
+                ToolName = br.Tool.Name,
+                BorrowReference = br.BorrowReference,
+                BorrowDate = br.BorrowDate,
+                DueDate = br.DueDate,
+                ReturnedDate = br.ReturnedDate,
+                Status = br.Status.ToString(),
+                LocationName = br.Tool.Location.Name,
+                Address = br.Tool.Location.Address,
+                City = br.Tool.Location.City,
+                ToolImageUrl = br.Tool.ImageUrl,
+                ToolDescription = br.Tool.Description
+            })
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<int> CreateAsync(string userId, BorrowRecordCreateInputModel model)
     {
         var tool = await dbContext.Tools.FirstOrDefaultAsync(t => t.Id == model.ToolId);
@@ -130,7 +156,7 @@ public class BorrowRecordService : IBorrowRecordService
             BorrowDate = now,
             DueDate = dueDate,
             Status = BorrowStatus.Pending,
-            BorrowReference = $"BOR-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}"
+            BorrowReference = ReferenceCodeGenerator.CreateBorrowReference(now)
         };
 
         tool.Quantity -= 1;

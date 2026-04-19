@@ -7,6 +7,7 @@ public class RepairRequestDetailsViewModel
     public string Description { get; set; } = string.Empty;
     public string ItemType { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
+    public string RequestReference { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string SubmittedBy { get; set; } = string.Empty;
     public string? AssignedVolunteer { get; set; }

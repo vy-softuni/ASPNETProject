@@ -28,6 +28,23 @@ public class BorrowRecordsController : Controller
         return View(model);
     }
 
+    public async Task<IActionResult> Details(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var model = await borrowRecordService.GetByIdForUserAsync(id, userId);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        return View(model);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Create(int toolId)
     {

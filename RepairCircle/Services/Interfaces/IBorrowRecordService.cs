@@ -13,4 +13,5 @@ public interface IBorrowRecordService
 
     Task<BorrowRecordCreateViewModel?> GetCreateModelAsync(int toolId);
     Task<int> CreateAsync(string userId, BorrowRecordCreateInputModel model);
+    Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId);
 }

@@ -35,6 +35,10 @@
                 <dd>@(Model.RepairSessionTitle ?? "Independent request")</dd>
             </div>
             <div>
+                <dt>Request reference</dt>
+                <dd><code>@Model.RequestReference</code></dd>
+            </div>
+            <div>
                 <dt>Requested on</dt>
                 <dd>@Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
             </div>
@@ -51,6 +55,7 @@
 
     <aside class="card detail-sidebar">
         <h2>Repair lifecycle</h2>
+        <partial name="_ReferenceCodePartial" model="Model.RequestReference" />
         <ol class="plain-list numbered-list">
             <li>Request submitted by the user.</li>
             <li>Volunteer or admin reviews the issue.</li>

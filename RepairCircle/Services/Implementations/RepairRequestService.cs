@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RepairCircle.Common;
 using RepairCircle.Data;
 using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
@@ -65,6 +66,7 @@ public class RepairRequestService : IRepairRequestService
                 Description = r.Description,
                 ItemType = r.ItemType,
                 ImageUrl = r.ImageUrl,
+                RequestReference = r.RequestReference,
                 Status = r.Status.ToString(),
                 SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
                 AssignedVolunteer = r.AssignedVolunteerProfile != null
@@ -144,6 +146,7 @@ public class RepairRequestService : IRepairRequestService
             Description = model.Description.Trim(),
             ItemType = model.ItemType.Trim(),
             ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim(),
+            RequestReference = ReferenceCodeGenerator.CreateRepairRequestReference(now),
             SubmittedByUserId = userId,
             LocationId = model.LocationId,
             RepairSessionId = model.RepairSessionId,

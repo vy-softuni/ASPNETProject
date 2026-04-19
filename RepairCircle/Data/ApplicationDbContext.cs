@@ -39,6 +39,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(b => b.BorrowReference)
             .IsUnique();
 
+        builder.Entity<RepairRequest>()
+            .HasIndex(r => r.RequestReference)
+            .IsUnique();
+
         builder.Entity<Favorite>()
             .HasIndex(f => new { f.UserId, f.ToolId })
             .IsUnique();

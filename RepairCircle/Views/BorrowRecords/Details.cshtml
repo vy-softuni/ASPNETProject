@@ -1,0 +1,57 @@
+@model BorrowRecordDetailsViewModel
+@{
+    ViewData["Title"] = "Borrow Record Details";
+}
+
+<section class="detail-grid">
+    <article class="card detail-primary">
+        <div class="item-card-topline">
+            <span class="badge">Borrow record</span>
+            <partial name="_BorrowStatusBadgePartial" model="Model.Status" />
+        </div>
+        <h1>@Model.ToolName</h1>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ToolImageUrl))
+        {
+            <img class="detail-image" src="@Url.Content(Model.ToolImageUrl)" alt="Image for @Model.ToolName" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.ToolDescription))
+        {
+            <p class="lead">@Model.ToolDescription</p>
+        }
+
+        <dl class="meta-list">
+            <div>
+                <dt>Borrowed on</dt>
+                <dd>@Model.BorrowDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+            </div>
+            <div>
+                <dt>Due date</dt>
+                <dd>@Model.DueDate.ToLocalTime().ToString("dd.MM.yyyy")</dd>
+            </div>
+            <div>
+                <dt>Returned date</dt>
+                <dd>@(Model.ReturnedDate?.ToLocalTime().ToString("dd.MM.yyyy") ?? "Not returned yet")</dd>
+            </div>
+            <div>
+                <dt>Pickup location</dt>
+                <dd>@Model.LocationName, @Model.City</dd>
+            </div>
+            <div>
+                <dt>Address</dt>
+                <dd>@Model.Address</dd>
+            </div>
+        </dl>
+
+        <div class="actions">
+            <a class="btn btn-secondary" asp-action="MyRecords">Back to my records</a>
+        </div>
+    </article>
+
+    <aside class="card detail-sidebar reference-sidebar">
+        <h2>Pickup reference</h2>
+        <p class="muted">Show this reference when collecting the tool from the workshop desk.</p>
+        <partial name="_ReferenceCodePartial" model="Model.BorrowReference" />
+    </aside>
+</section>

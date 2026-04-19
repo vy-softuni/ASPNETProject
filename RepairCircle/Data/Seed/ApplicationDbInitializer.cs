@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using RepairCircle.Common;
 using Microsoft.EntityFrameworkCore;
 using RepairCircle.Data.Enums;
 using RepairCircle.Data.Models;
@@ -328,6 +329,7 @@ public static class ApplicationDbInitializer
                     Description = "Portable Bluetooth speaker stopped powering on after a charging issue. Looking for diagnosis and possible battery replacement.",
                     ItemType = "Small Electronics",
                     ImageUrl = "/images/requests/speaker.jpg",
+                    RequestReference = "REQ-20260419-A1B2C3D4",
                     Status = RepairRequestStatus.InProgress,
                     SubmittedByUserId = seededUsers[SeedConstants.UserOneEmail].Id,
                     AssignedVolunteerProfileId = volunteerProfiles[0].Id,
@@ -341,6 +343,7 @@ public static class ApplicationDbInitializer
                     Description = "Rear brake has become soft and the wheel rubs slightly after transport. Needs checking before daily commuting.",
                     ItemType = "Bicycle",
                     ImageUrl = "/images/requests/bike.jpg",
+                    RequestReference = "REQ-20260419-E5F6A7B8",
                     Status = RepairRequestStatus.Approved,
                     SubmittedByUserId = seededUsers[SeedConstants.UserTwoEmail].Id,
                     AssignedVolunteerProfileId = volunteerProfiles[1].Id,
@@ -354,6 +357,7 @@ public static class ApplicationDbInitializer
                     Description = "Winter jacket zipper teeth are broken near the middle and the zipper no longer closes smoothly.",
                     ItemType = "Clothing",
                     ImageUrl = "/images/requests/jacket.jpg",
+                    RequestReference = "REQ-20260419-C9D0E1F2",
                     Status = RepairRequestStatus.Submitted,
                     SubmittedByUserId = seededUsers[SeedConstants.UserOneEmail].Id,
                     LocationId = locations.First(l => l.Name == "Youth Maker Space").Id,
@@ -365,6 +369,8 @@ public static class ApplicationDbInitializer
             await dbContext.SaveChangesAsync();
             logger.LogInformation("Seeded repair requests.");
         }
+
+        await SeedMissingReferencesAsync(dbContext, logger);
 
         if (!await dbContext.BorrowRecords.AnyAsync())
         {
@@ -538,4 +544,36 @@ public static class ApplicationDbInitializer
         var errors = string.Join("; ", result.Errors.Select(e => e.Description));
         throw new InvalidOperationException($"Error {action}: {errors}");
     }
+
+    private static async Task SeedMissingReferencesAsync(ApplicationDbContext dbContext, ILogger logger)
+    {
+        var changed = false;
+
+        var repairRequestsWithoutReferences = await dbContext.RepairRequests
+            .Where(r => string.IsNullOrWhiteSpace(r.RequestReference))
+            .ToListAsync();
+
+        foreach (var request in repairRequestsWithoutReferences)
+        {
+            request.RequestReference = ReferenceCodeGenerator.CreateRepairRequestReference(DateTime.UtcNow);
+            changed = true;
+        }
+
+        var borrowRecordsWithoutReferences = await dbContext.BorrowRecords
+            .Where(b => string.IsNullOrWhiteSpace(b.BorrowReference))
+            .ToListAsync();
+
+        foreach (var record in borrowRecordsWithoutReferences)
+        {
+            record.BorrowReference = ReferenceCodeGenerator.CreateBorrowReference(DateTime.UtcNow);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await dbContext.SaveChangesAsync();
+            logger.LogInformation("Backfilled missing request and borrow references.");
+        }
+    }
+
 }

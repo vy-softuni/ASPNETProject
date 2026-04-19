@@ -30,6 +30,10 @@
                 <dd>@Model.Location.Name</dd>
             </div>
             <div>
+                <dt>Request reference</dt>
+                <dd><code>@Model.RequestReference</code></dd>
+            </div>
+            <div>
                 <dt>Requested on</dt>
                 <dd>@Model.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
             </div>
@@ -42,6 +46,7 @@
 
     <aside class="card detail-sidebar">
         <h2>Manage assignment</h2>
+        <partial name="_ReferenceCodePartial" model="Model.RequestReference" />
         <form asp-action="Update" method="post">
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
             @Html.AntiForgeryToken()

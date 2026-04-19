@@ -22,7 +22,12 @@ public class RepairRequest : BaseEntity
 
     [Display(Name = "Image path or URL")]
     [StringLength(255, ErrorMessage = "Image URL cannot exceed 255 characters.")]
-        public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
+
+    [Required]
+    [Display(Name = "Request reference")]
+    [StringLength(50)]
+    public string RequestReference { get; set; } = null!;
 
     [Display(Name = "Status")]
     public RepairRequestStatus Status { get; set; } = RepairRequestStatus.Submitted;
