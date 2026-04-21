@@ -9,7 +9,7 @@
         url = Url.Action("Details", "Tools", new { id = Model.Id }),
         categoryName = Model.CategoryName,
         locationName = Model.LocationName,
-        imageUrl = string.IsNullOrWhiteSpace(Model.ImageUrl) ? null : Url.Content(Model.ImageUrl),
+        imageUrl = Url.Content(string.IsNullOrWhiteSpace(Model.ImageUrl) ? "~/images/placeholders/tool-placeholder.jpg" : Model.ImageUrl),
         isAvailable = Model.IsAvailable
     };
 
@@ -31,10 +31,7 @@
         </div>
         <h1>@Model.Name</h1>
 
-        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-        {
-            <img class="detail-image" src="@Url.Content(Model.ImageUrl)" alt="Image of @Model.Name" />
-        }
+        <img class="detail-image" src="@Url.Content(string.IsNullOrWhiteSpace(Model.ImageUrl) ? "~/images/placeholders/tool-placeholder.jpg" : Model.ImageUrl)" alt="Image of @Model.Name" />
         <p class="lead">@Model.Description</p>
 
         <dl class="meta-list">

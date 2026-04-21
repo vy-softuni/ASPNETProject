@@ -1,0 +1,11 @@
+global using Microsoft.EntityFrameworkCore;
+global using RepairCircle.Data;
+global using RepairCircle.Data.Enums;
+global using RepairCircle.Data.Models;
+global using RepairCircle.Services.Implementations;
+global using RepairCircle.Services.Interfaces;
+global using RepairCircle.ViewModels.BorrowRecords;
+global using RepairCircle.ViewModels.Feedbacks;
+global using RepairCircle.ViewModels.RepairRequests;
+global using RepairCircle.ViewModels.Volunteers;
+global using Xunit;

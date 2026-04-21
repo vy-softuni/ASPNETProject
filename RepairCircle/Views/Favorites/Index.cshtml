@@ -10,7 +10,7 @@
 
     string BuildPageUrl(int pageNumber)
     {
-        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value.ToString());
         query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
         return QueryHelpers.AddQueryString(Context.Request.Path, query);
     }
@@ -55,7 +55,7 @@ else
     <section class="grid grid-2">
         @foreach (var tool in items)
         {
-            var imageUrl = string.IsNullOrWhiteSpace(tool.ImageUrl) ? null : Url.Content(tool.ImageUrl);
+            var imageUrl = Url.Content(string.IsNullOrWhiteSpace(tool.ImageUrl) ? "~/images/placeholders/tool-placeholder.jpg" : tool.ImageUrl);
             <article class="card item-card">
                 @if (!string.IsNullOrWhiteSpace(imageUrl))
                 {

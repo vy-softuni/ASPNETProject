@@ -11,7 +11,7 @@
 
     string BuildPageUrl(int pageNumber)
     {
-        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value.ToString());
         query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
         return QueryHelpers.AddQueryString(Context.Request.Path, query);
     }

@@ -20,10 +20,7 @@
         </div>
         <h1>@Model.Title</h1>
 
-        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-        {
-            <img class="detail-image" src="@Url.Content(Model.ImageUrl)" alt="Image for repair request @Model.Title" />
-        }
+        <img class="detail-image" src="@Url.Content(string.IsNullOrWhiteSpace(Model.ImageUrl) ? "~/images/placeholders/request-placeholder.jpg" : Model.ImageUrl)" alt="Image for repair request @Model.Title" />
         <p class="lead">@Model.Description</p>
         <dl class="meta-list">
             <div>

@@ -11,10 +11,7 @@
         </div>
         <h1>@Model.ToolName</h1>
 
-        @if (!string.IsNullOrWhiteSpace(Model.ToolImageUrl))
-        {
-            <img class="detail-image" src="@Url.Content(Model.ToolImageUrl)" alt="Image for @Model.ToolName" />
-        }
+        <img class="detail-image" src="@Url.Content(string.IsNullOrWhiteSpace(Model.ToolImageUrl) ? "~/images/placeholders/tool-placeholder.jpg" : Model.ToolImageUrl)" alt="Image for @Model.ToolName" />
 
         @if (!string.IsNullOrWhiteSpace(Model.ToolDescription))
         {

@@ -19,4 +19,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="RepairCircle.Tests\**\*.cs" />
+    <EmbeddedResource Remove="RepairCircle.Tests\**\*" />
+    <None Remove="RepairCircle.Tests\**\*" />
+    <Content Remove="RepairCircle.Tests\**\*" />
+  </ItemGroup>
+
 </Project>

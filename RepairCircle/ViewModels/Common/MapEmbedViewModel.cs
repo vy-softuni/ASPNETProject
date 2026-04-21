@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace RepairCircle.ViewModels.Common;
 
 public class MapEmbedViewModel
@@ -16,7 +18,9 @@ public class MapEmbedViewModel
         {
             if (HasCoordinates)
             {
-                return $"{Latitude!.Value},{Longitude!.Value}";
+                var lat = Latitude!.Value.ToString("0.######", CultureInfo.InvariantCulture);
+                var lng = Longitude!.Value.ToString("0.######", CultureInfo.InvariantCulture);
+                return $"{lat},{lng}";
             }
 
             var parts = new[] { Title, AddressLine, City }

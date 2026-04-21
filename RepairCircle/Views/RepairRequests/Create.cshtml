@@ -55,7 +55,7 @@
 
             <div class="form-field form-field-wide">
                 <label asp-for="Input.ImageUrl"></label>
-                <input asp-for="Input.ImageUrl" placeholder="Optional external image URL or existing path" />
+                <input asp-for="Input.ImageUrl" placeholder="Optional direct image URL (or leave blank if you upload a photo below)" />
                 <span asp-validation-for="Input.ImageUrl"></span>
             </div>
 
@@ -63,7 +63,7 @@
                 <label asp-for="Input.UploadedImage"></label>
                 <input asp-for="Input.UploadedImage" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
                 <span asp-validation-for="Input.UploadedImage"></span>
-                <small class="muted small-text">Optional. Upload a clear photo of the item to help volunteers evaluate the repair.</small>
+                <small class="muted small-text">Optional. You can either paste a direct image link above or upload a clear photo here to help volunteers evaluate the repair.</small>
             </div>
 
             <div class="form-field form-field-wide">
