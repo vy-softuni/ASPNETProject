@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using RepairCircle.Data.Enums;
 
 namespace RepairCircle.Data.Models;
@@ -6,10 +7,12 @@ namespace RepairCircle.Data.Models;
 public class BorrowRecord : BaseEntity, IValidatableObject
 {
     public int ToolId { get; set; }
+    [ValidateNever]
     public Tool Tool { get; set; } = null!;
 
     [Required]
     public string UserId { get; set; } = null!;
+    [ValidateNever]
     public ApplicationUser User { get; set; } = null!;
 
     [Display(Name = "Borrow date")]

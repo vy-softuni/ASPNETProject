@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using RepairCircle.Data.Enums;
 
 namespace RepairCircle.Data.Models;
@@ -31,12 +32,16 @@ public class Tool : BaseEntity
 
     [Display(Name = "Category")]
     public int ToolCategoryId { get; set; }
+    [ValidateNever]
     public ToolCategory ToolCategory { get; set; } = null!;
 
     [Display(Name = "Location")]
     public int LocationId { get; set; }
+    [ValidateNever]
     public Location Location { get; set; } = null!;
 
+    [ValidateNever]
     public ICollection<BorrowRecord> BorrowRecords { get; set; } = new HashSet<BorrowRecord>();
+    [ValidateNever]
     public ICollection<Favorite> Favorites { get; set; } = new HashSet<Favorite>();
 }

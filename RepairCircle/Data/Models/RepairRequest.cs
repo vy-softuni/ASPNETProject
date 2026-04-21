@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using RepairCircle.Data.Enums;
 
 namespace RepairCircle.Data.Models;
@@ -34,22 +35,27 @@ public class RepairRequest : BaseEntity
 
     [Required]
     public string SubmittedByUserId { get; set; } = null!;
+    [ValidateNever]
     public ApplicationUser SubmittedByUser { get; set; } = null!;
 
     [Display(Name = "Assigned volunteer")]
     public int? AssignedVolunteerProfileId { get; set; }
+    [ValidateNever]
     public VolunteerProfile? AssignedVolunteerProfile { get; set; }
 
     [Display(Name = "Location")]
     public int LocationId { get; set; }
+    [ValidateNever]
     public Location Location { get; set; } = null!;
 
     [Display(Name = "Repair session")]
     public int? RepairSessionId { get; set; }
+    [ValidateNever]
     public RepairSession? RepairSession { get; set; }
 
     [Display(Name = "Requested date")]
     public DateTime RequestedDate { get; set; } = DateTime.UtcNow;
 
+    [ValidateNever]
     public ICollection<Feedback> Feedbacks { get; set; } = new HashSet<Feedback>();
 }

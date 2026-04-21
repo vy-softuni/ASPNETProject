@@ -90,6 +90,10 @@ public class RepairSessionsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(RepairSession model)
     {
+        ModelState.Remove(nameof(RepairSession.Location));
+        ModelState.Remove(nameof(RepairSession.Volunteers));
+        ModelState.Remove(nameof(RepairSession.RepairRequests));
+
         if (!ModelState.IsValid)
         {
             await PopulateLocationsAsync(model.LocationId);
@@ -120,6 +124,10 @@ public class RepairSessionsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, RepairSession model)
     {
+        ModelState.Remove(nameof(RepairSession.Location));
+        ModelState.Remove(nameof(RepairSession.Volunteers));
+        ModelState.Remove(nameof(RepairSession.RepairRequests));
+
         if (id != model.Id)
         {
             return BadRequest();

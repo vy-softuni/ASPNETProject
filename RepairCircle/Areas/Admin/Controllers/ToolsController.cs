@@ -96,6 +96,11 @@ public class ToolsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Tool model, IFormFile? imageFile)
     {
+        ModelState.Remove(nameof(Tool.ToolCategory));
+        ModelState.Remove(nameof(Tool.Location));
+        ModelState.Remove(nameof(Tool.BorrowRecords));
+        ModelState.Remove(nameof(Tool.Favorites));
+
         if (!fileStorageService.TryValidateImage(imageFile, out var imageValidationError))
         {
             ModelState.AddModelError(nameof(model.ImageUrl), imageValidationError);
@@ -136,6 +141,11 @@ public class ToolsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Tool model, IFormFile? imageFile)
     {
+        ModelState.Remove(nameof(Tool.ToolCategory));
+        ModelState.Remove(nameof(Tool.Location));
+        ModelState.Remove(nameof(Tool.BorrowRecords));
+        ModelState.Remove(nameof(Tool.Favorites));
+
         if (id != model.Id)
         {
             return BadRequest();

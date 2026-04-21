@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RepairCircle.Data.Models;
 
@@ -32,9 +33,12 @@ public class RepairSession : BaseEntity, IValidatableObject
 
     [Display(Name = "Location")]
     public int LocationId { get; set; }
+    [ValidateNever]
     public Location Location { get; set; } = null!;
 
+    [ValidateNever]
     public ICollection<VolunteerProfile> Volunteers { get; set; } = new HashSet<VolunteerProfile>();
+    [ValidateNever]
     public ICollection<RepairRequest> RepairRequests { get; set; } = new HashSet<RepairRequest>();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
