@@ -25,11 +25,33 @@ public class BorrowRecordsController : Controller
         }
 
         var model = await borrowRecordService.GetUserRecordsAsync(userId, searchTerm, status, page);
+        ViewData["Title"] = "My Borrow Records";
         return View(model);
+    }
+
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> Index(string? searchTerm, string? status, int page = 1)
+    {
+        var model = await borrowRecordService.GetAllRecordsAsync(searchTerm, status, page);
+        ViewData["Title"] = "All Borrow Records";
+        return View("MyRecords", model);
     }
 
     public async Task<IActionResult> Details(int id)
     {
+        if (User.IsInRole("Administrator"))
+        {
+            var adminModel = await borrowRecordService.GetByIdAsync(id);
+            if (adminModel is null)
+            {
+                return NotFound();
+            }
+
+            ViewData["BackAction"] = nameof(Index);
+            ViewData["BackLabel"] = "Back to all borrowings";
+            return View(adminModel);
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -42,6 +64,8 @@ public class BorrowRecordsController : Controller
             return NotFound();
         }
 
+        ViewData["BackAction"] = nameof(MyRecords);
+        ViewData["BackLabel"] = "Back to my records";
         return View(model);
     }
 

@@ -14,11 +14,11 @@
             <nav class="main-nav">
                 <a asp-controller="Home" asp-action="About">About</a>
                 <a asp-controller="Tools" asp-action="Index">Tools</a>
-                <a asp-controller="RepairRequests" asp-action="Index">Repairs</a>
                 <a asp-controller="RepairSessions" asp-action="Index">Sessions</a>
                 <a asp-controller="Volunteers" asp-action="Index">Volunteers</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
+                    <a asp-controller="RepairRequests" asp-action="Create">Request Repair</a>
                     <a asp-controller="RepairRequests" asp-action="MyRequests">My Repairs</a>
                     <a asp-controller="BorrowRecords" asp-action="MyRecords">My Borrowings</a>
                     <a asp-controller="Favorites" asp-action="Index">Favorites</a>
@@ -26,6 +26,8 @@
                 <a asp-controller="Home" asp-action="Contact">Contact</a>
                 @if (User.IsInRole("Administrator"))
                 {
+                    <a asp-controller="RepairRequests" asp-action="Index">All Repairs</a>
+                    <a asp-controller="BorrowRecords" asp-action="Index">All Borrowings</a>
                     <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
                 }
             </nav>
@@ -46,8 +48,16 @@
             </div>
             <div class="footer-links">
                 <a asp-controller="Tools" asp-action="Index">Browse tools</a>
-                <a asp-controller="RepairRequests" asp-action="Create">Request a repair</a>
-                <a asp-controller="Volunteers" asp-action="BecomeOne">Become a volunteer</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="RepairRequests" asp-action="Create">Request a repair</a>
+                    <a asp-controller="Volunteers" asp-action="BecomeOne">Become a volunteer</a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login">Log in to request a repair</a>
+                    <a asp-area="Identity" asp-page="/Account/Login">Log in to become a volunteer</a>
+                }
             </div>
         </div>
     </footer>

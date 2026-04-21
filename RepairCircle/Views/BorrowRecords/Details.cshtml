@@ -45,7 +45,7 @@
         </dl>
 
         <div class="actions">
-            <a class="btn btn-secondary" asp-action="MyRecords">Back to my records</a>
+            <a class="btn btn-secondary" asp-action="@(ViewData["BackAction"] as string ?? "MyRecords")">@(ViewData["BackLabel"] as string ?? "Back to my records")</a>
         </div>
     </article>
 

@@ -3,7 +3,9 @@
 @using System.Linq
 @model BorrowRecordIndexViewModel
 @{
-    ViewData["Title"] = "My Borrow Records";
+    ViewData["Title"] = ViewData["Title"] ?? "Borrow Records";
+    var pageTitle = (ViewData["Title"] as string) ?? "Borrow Records";
+    var isAdminView = string.Equals(pageTitle, "All Borrow Records", StringComparison.OrdinalIgnoreCase);
     var viewModel = Model ?? new BorrowRecordIndexViewModel();
     var items = viewModel.Items ?? Array.Empty<BorrowRecordListItemViewModel>();
     var statuses = viewModel.Statuses ?? Array.Empty<string>();
@@ -21,9 +23,9 @@
 }
 
 <section class="page-header card">
-    <span class="eyebrow">Personal history</span>
-    <h1>My borrow records</h1>
-    <p>Track active, approved, and returned tool requests from one place.</p>
+    <span class="eyebrow">@(isAdminView ? "Administration" : "Personal history")</span>
+    <h1>@(isAdminView ? "All borrow records" : "My borrow records")</h1>
+    <p>@(isAdminView ? "Monitor borrowing requests across the whole platform." : "Track active, approved, and returned tool requests from one place.")</p>
 </section>
 
 <section class="card filter-card">
@@ -45,7 +47,7 @@
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" href="@Url.Action("MyRecords", "BorrowRecords")">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action(isAdminView ? "Index" : "MyRecords", "BorrowRecords")">Clear</a>
         </div>
     </form>
 </section>
@@ -53,8 +55,8 @@
 @if (!items.Any())
 {
     <section class="empty-state">
-        <h2>No borrowing records yet</h2>
-        <p>Borrowed tools will appear here after your first request.</p>
+        <h2>@(isAdminView ? "No borrowing records found" : "No borrowing records yet")</h2>
+        <p>@(isAdminView ? "Borrowings will appear here after users submit requests." : "Borrowed tools will appear here after your first request.")</p>
     </section>
 }
 else

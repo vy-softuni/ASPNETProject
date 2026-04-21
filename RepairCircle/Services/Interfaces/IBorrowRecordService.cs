@@ -11,7 +11,14 @@ public interface IBorrowRecordService
         int page = 1,
         int pageSize = 10);
 
+    Task<BorrowRecordIndexViewModel> GetAllRecordsAsync(
+        string? searchTerm = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 10);
+
     Task<BorrowRecordCreateViewModel?> GetCreateModelAsync(int toolId);
     Task<int> CreateAsync(string userId, BorrowRecordCreateInputModel model);
     Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId);
+    Task<BorrowRecordDetailsViewModel?> GetByIdAsync(int id);
 }

@@ -17,17 +17,25 @@ public class RepairRequestsController : Controller
         this.fileStorageService = fileStorageService;
     }
 
+    [Authorize]
     public async Task<IActionResult> Index(string? searchTerm, string? status, int? locationId, int page = 1)
     {
+        if (!User.IsInRole("Administrator"))
+        {
+            return RedirectToAction(nameof(MyRequests), new { searchTerm, status, locationId, page });
+        }
+
         try
         {
             var model = await repairRequestService.GetAllAsync(searchTerm, status, locationId, page);
+            ViewData["Title"] = "All Repair Requests";
             return View(model);
         }
         catch
         {
             TempData["StatusMessage"] = "Repair requests could not be loaded right now. Please try again later.";
             TempData["StatusType"] = "error";
+            ViewData["Title"] = "All Repair Requests";
             return View(new RepairRequestIndexViewModel());
         }
     }
@@ -56,16 +64,26 @@ public class RepairRequestsController : Controller
         }
     }
 
+    [Authorize]
     public async Task<IActionResult> Details(int id)
     {
-        var userId = User.Identity?.IsAuthenticated == true
-            ? User.FindFirstValue(ClaimTypes.NameIdentifier)
-            : null;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
 
         var model = await repairRequestService.GetByIdAsync(id, userId);
         if (model is null)
         {
             return NotFound();
+        }
+
+        if (!User.IsInRole("Administrator") && !string.Equals(model.SubmittedByUserId, userId, StringComparison.Ordinal))
+        {
+            TempData["StatusMessage"] = "You can only open your own repair requests.";
+            TempData["StatusType"] = "warning";
+            return RedirectToAction(nameof(MyRequests));
         }
 
         return View(model);

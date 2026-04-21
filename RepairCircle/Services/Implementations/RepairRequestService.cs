@@ -102,6 +102,7 @@ public class RepairRequestService : IRepairRequestService
             RequestReference = row.RequestReference,
             Status = row.Status.ToString(),
             SubmittedBy = row.SubmittedBy,
+            SubmittedByUserId = row.SubmittedByUserId,
             AssignedVolunteer = row.AssignedVolunteer,
             LocationName = row.LocationName,
             City = row.City,

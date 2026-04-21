@@ -8,8 +8,18 @@
         <span class="eyebrow">Community repair and tool sharing</span>
         <h1>Repair more. Waste less. Help each other.</h1>
         <p class="lead">RepairCircle connects residents, volunteers, and community workshops so broken items get fixed and useful tools keep circulating.</p>
+        <p class="muted">Registered users create private repair requests that are visible to themselves and administrators.</p>
         <div class="actions">
-            <a class="btn btn-primary" asp-controller="RepairRequests" asp-action="Create">Submit a repair request</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="btn btn-primary" asp-controller="RepairRequests" asp-action="Create">Submit a repair request</a>
+                <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="MyRequests">View my repair requests</a>
+            }
+            else
+            {
+                <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Create account to request a repair</a>
+                <a class="btn btn-secondary" asp-area="Identity" asp-page="/Account/Login">Log in</a>
+            }
             <a class="btn btn-secondary" asp-controller="Tools" asp-action="Index">Browse tools</a>
             <a class="btn btn-secondary" asp-controller="Volunteers" asp-action="BecomeOne">Become a volunteer</a>
         </div>

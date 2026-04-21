@@ -20,92 +20,45 @@ public class BorrowRecordService : IBorrowRecordService
         this.realtimeNotificationService = realtimeNotificationService;
     }
 
-    public async Task<BorrowRecordIndexViewModel> GetUserRecordsAsync(
+    public Task<BorrowRecordIndexViewModel> GetUserRecordsAsync(
         string userId,
         string? searchTerm = null,
         string? status = null,
         int page = 1,
         int pageSize = 10)
     {
-        try
-        {
-            page = page < 1 ? 1 : page;
-            pageSize = pageSize < 1 ? 10 : pageSize;
+        return GetPagedRecordsAsync(
+            dbContext.BorrowRecords
+                .AsNoTracking()
+                .Include(br => br.Tool)
+                    .ThenInclude(t => t.Location)
+                .Where(br => br.UserId == userId),
+            searchTerm,
+            status,
+            page,
+            pageSize);
+    }
 
-            var recordsData = await dbContext.BorrowRecords
-            .AsNoTracking()
-            .Include(br => br.Tool)
-                .ThenInclude(t => t.Location)
-            .Where(br => br.UserId == userId)
-            .ToListAsync();
+    public Task<BorrowRecordIndexViewModel> GetAllRecordsAsync(
+        string? searchTerm = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 10)
+    {
+        return GetPagedRecordsAsync(
+            dbContext.BorrowRecords
+                .AsNoTracking()
+                .Include(br => br.Tool)
+                    .ThenInclude(t => t.Location),
+            searchTerm,
+            status,
+            page,
+            pageSize);
+    }
 
-        IEnumerable<BorrowRecord> filteredRecords = recordsData;
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var term = searchTerm.Trim();
-            filteredRecords = filteredRecords.Where(br =>
-                br.Tool.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                br.BorrowReference.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                br.Tool.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.IsNullOrWhiteSpace(status) &&
-            Enum.TryParse<BorrowStatus>(status, out var parsedStatus))
-        {
-            filteredRecords = filteredRecords.Where(br => br.Status == parsedStatus);
-        }
-
-        var totalItems = filteredRecords.Count();
-        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
-        page = Math.Min(page, totalPages);
-
-        var records = filteredRecords
-            .OrderByDescending(br => br.BorrowDate)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(br => new BorrowRecordListItemViewModel
-            {
-                Id = br.Id,
-                ToolName = br.Tool.Name,
-                BorrowReference = br.BorrowReference,
-                BorrowDate = br.BorrowDate,
-                DueDate = br.DueDate,
-                ReturnedDate = br.ReturnedDate,
-                Status = br.Status.ToString(),
-                LocationName = br.Tool.Location.Name
-            })
-            .ToList();
-
-            return new BorrowRecordIndexViewModel
-            {
-                SearchTerm = searchTerm,
-                Status = status,
-                Statuses = Enum.GetNames<BorrowStatus>(),
-                Items = records,
-                Pagination = new PaginationViewModel
-                {
-                    CurrentPage = page,
-                    PageSize = pageSize,
-                    TotalItems = totalItems
-                }
-            };
-        }
-        catch
-        {
-            return new BorrowRecordIndexViewModel
-            {
-                SearchTerm = searchTerm,
-                Status = status,
-                Statuses = Enum.GetNames<BorrowStatus>(),
-                Pagination = new PaginationViewModel
-                {
-                    CurrentPage = 1,
-                    PageSize = pageSize < 1 ? 10 : pageSize,
-                    TotalItems = 0
-                }
-            };
-        }
+    public async Task<BorrowRecordDetailsViewModel?> GetByIdAsync(int id)
+    {
+        return await GetBorrowRecordDetailsAsync(id, null);
     }
 
     public async Task<BorrowRecordCreateViewModel?> GetCreateModelAsync(int toolId)
@@ -129,11 +82,24 @@ public class BorrowRecordService : IBorrowRecordService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId)
+    public Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId)
     {
-        var row = await dbContext.BorrowRecords
+        return GetBorrowRecordDetailsAsync(id, userId);
+    }
+
+
+    private async Task<BorrowRecordDetailsViewModel?> GetBorrowRecordDetailsAsync(int id, string? userId)
+    {
+        var query = dbContext.BorrowRecords
             .AsNoTracking()
-            .Where(br => br.Id == id && br.UserId == userId)
+            .Where(br => br.Id == id);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            query = query.Where(br => br.UserId == userId);
+        }
+
+        var row = await query
             .Select(br => new
             {
                 br.Id,
@@ -171,6 +137,89 @@ public class BorrowRecordService : IBorrowRecordService
             ToolImageUrl = row.ToolImageUrl,
             ToolDescription = row.ToolDescription
         };
+    }
+
+    private async Task<BorrowRecordIndexViewModel> GetPagedRecordsAsync(
+        IQueryable<BorrowRecord> query,
+        string? searchTerm,
+        string? status,
+        int page,
+        int pageSize)
+    {
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
+            var recordsData = await query.ToListAsync();
+
+            IEnumerable<BorrowRecord> filteredRecords = recordsData;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
+                filteredRecords = filteredRecords.Where(br =>
+                    (br.Tool?.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (br.BorrowReference?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (br.Tool?.Location?.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status) &&
+                Enum.TryParse<BorrowStatus>(status, out var parsedStatus))
+            {
+                filteredRecords = filteredRecords.Where(br => br.Status == parsedStatus);
+            }
+
+            var totalItems = filteredRecords.Count();
+            var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Min(page, totalPages);
+
+            var records = filteredRecords
+                .OrderByDescending(br => br.BorrowDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(br => new BorrowRecordListItemViewModel
+                {
+                    Id = br.Id,
+                    ToolName = br.Tool?.Name ?? "Unknown tool",
+                    BorrowReference = br.BorrowReference,
+                    BorrowDate = br.BorrowDate,
+                    DueDate = br.DueDate,
+                    ReturnedDate = br.ReturnedDate,
+                    Status = br.Status.ToString(),
+                    LocationName = br.Tool?.Location?.Name ?? "Unknown location"
+                })
+                .ToList();
+
+            return new BorrowRecordIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                Status = status,
+                Statuses = Enum.GetNames<BorrowStatus>(),
+                Items = records,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new BorrowRecordIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                Status = status,
+                Statuses = Enum.GetNames<BorrowStatus>(),
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = 1,
+                    PageSize = pageSize < 1 ? 10 : pageSize,
+                    TotalItems = 0
+                }
+            };
+        }
     }
 
     public async Task<int> CreateAsync(string userId, BorrowRecordCreateInputModel model)

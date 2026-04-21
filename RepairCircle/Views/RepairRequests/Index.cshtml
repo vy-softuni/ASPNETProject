@@ -25,7 +25,14 @@
 <section class="page-header card">
     <span class="eyebrow">Repair workflow</span>
     <h1>@ViewData["Title"]</h1>
-    <p>Browse submitted requests and review their current assignment and status.</p>
+    @if (ViewData["Title"]?.ToString() == "All Repair Requests")
+    {
+        <p>Administrator view of every submitted repair request in the platform.</p>
+    }
+    else
+    {
+        <p>Only your own repair requests are listed here so your cases stay private.</p>
+    }
 </section>
 
 <section class="card filter-card">
@@ -68,6 +75,10 @@
     <section class="empty-state">
         <h2>No repair requests found</h2>
         <p>Try different filters or add a new request.</p>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <p><a class="btn btn-primary" href="@Url.Action("Create", "RepairRequests")">Request a repair</a></p>
+        }
     </section>
 }
 else

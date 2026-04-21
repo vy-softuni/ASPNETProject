@@ -10,6 +10,7 @@ public class RepairRequestDetailsViewModel
     public string RequestReference { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string SubmittedBy { get; set; } = string.Empty;
+    public string SubmittedByUserId { get; set; } = string.Empty;
     public string? AssignedVolunteer { get; set; }
     public string LocationName { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
