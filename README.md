@@ -646,11 +646,11 @@ Example screenshot section format:
 ## Screenshots
 
 ### Home Page
-![Home Page](RepairCircle/docs/screenshots/home-page.png)
-<img src="RepairCircle/docs/screenshots/home-page.png" alt="Home Page" width="800">
+![Home Page](https://github.com/vy-softuni/ASPNETProject/blob/main/RepairCircle/docs/screenshots/home-page.png)
+
 
 ### Admin Dashboard
-![Admin Dashboard](RepairCircle/docs/screenshots/admin-dashboard.png)
+![Admin Dashboard](https://github.com/vy-softuni/ASPNETProject/blob/main/RepairCircle/docs/screenshots/admin-dashboard.png)
 ```
 
 ---
