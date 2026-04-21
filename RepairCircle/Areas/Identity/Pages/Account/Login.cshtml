@@ -1,0 +1,41 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<section class="page-header card">
+    <span class="eyebrow">Account</span>
+    <h1>Log in</h1>
+    <p>Use your RepairCircle account to access repairs, borrowings, and administration.</p>
+</section>
+
+<div class="auth-shell single-auth card auth-card">
+    <form id="account" method="post" class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+        <input asp-for="Input.ReturnUrl" type="hidden" />
+        <div class="form-field">
+            <label asp-for="Input.Email"></label>
+            <input asp-for="Input.Email" autocomplete="username" aria-required="true" />
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="Input.Password"></label>
+            <input asp-for="Input.Password" autocomplete="current-password" aria-required="true" />
+            <span asp-validation-for="Input.Password" class="text-danger"></span>
+        </div>
+        <div class="form-field checkbox-field">
+            <label class="checkbox-label" asp-for="Input.RememberMe">
+                <input asp-for="Input.RememberMe" /> @Html.DisplayNameFor(m => m.Input.RememberMe)
+            </label>
+        </div>
+        <div class="actions">
+            <button id="login-submit" type="submit" class="btn btn-primary">Log in</button>
+            <a class="btn btn-secondary" asp-page="./Register" asp-route-returnUrl="@Model.Input.ReturnUrl">Create account</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

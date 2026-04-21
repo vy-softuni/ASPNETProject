@@ -48,14 +48,28 @@ public class HomeService : IHomeService
             })
             .ToListAsync();
 
-        var featuredTools = await dbContext.Tools
+        var featuredToolRows = await dbContext.Tools
             .AsNoTracking()
-            .Include(t => t.ToolCategory)
-            .Include(t => t.Location)
             .Where(t => t.IsAvailable && t.Quantity > 0)
             .OrderByDescending(t => t.Quantity)
             .ThenBy(t => t.Name)
             .Take(3)
+            .Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Description,
+                t.ImageUrl,
+                t.Condition,
+                t.IsAvailable,
+                t.Quantity,
+                CategoryName = t.ToolCategory.Name,
+                LocationName = t.Location.Name,
+                City = t.Location.City
+            })
+            .ToListAsync();
+
+        var featuredTools = featuredToolRows
             .Select(t => new ToolListItemViewModel
             {
                 Id = t.Id,
@@ -65,11 +79,11 @@ public class HomeService : IHomeService
                 Condition = t.Condition.ToString(),
                 IsAvailable = t.IsAvailable,
                 Quantity = t.Quantity,
-                CategoryName = t.ToolCategory.Name,
-                LocationName = t.Location.Name,
-                City = t.Location.City
+                CategoryName = t.CategoryName,
+                LocationName = t.LocationName,
+                City = t.City
             })
-            .ToListAsync();
+            .ToList();
 
         return new HomeIndexViewModel
         {

@@ -15,3 +15,8 @@ Open:
  https://localhost:7228
  or
  http://localhost:5107
+
+Notes:
+- This project uses local login and registration only.
+- External login providers are intentionally not configured.
+- Password reset email sending is not configured.

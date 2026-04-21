@@ -14,7 +14,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=RepairCircleDb_Migrations_Working_20260420;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True")
+            .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=RepairCircleDb_FinalFix_20260420;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True")
             .Options;
 
         var context = new ApplicationDbContext(options);

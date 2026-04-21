@@ -29,20 +29,18 @@ public class VolunteerService : IVolunteerService
 
         var query = dbContext.VolunteerProfiles
             .AsNoTracking()
-            .Include(v => v.User)
-            .Include(v => v.Skills)
             .Where(v => v.IsApproved)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            var likeTerm = $"%{searchTerm.Trim()}%";
             query = query.Where(v =>
-                (v.User.FullName != null && v.User.FullName.ToLower().Contains(normalizedSearchTerm)) ||
-                (v.User.UserName != null && v.User.UserName.ToLower().Contains(normalizedSearchTerm)) ||
-                (v.User.Email != null && v.User.Email.ToLower().Contains(normalizedSearchTerm)) ||
-                (v.Bio != null && v.Bio.ToLower().Contains(normalizedSearchTerm)) ||
-                v.Skills.Any(s => s.Name.ToLower().Contains(normalizedSearchTerm)));
+                EF.Functions.Like(v.User.FullName ?? string.Empty, likeTerm) ||
+                EF.Functions.Like(v.User.UserName ?? string.Empty, likeTerm) ||
+                EF.Functions.Like(v.User.Email ?? string.Empty, likeTerm) ||
+                EF.Functions.Like(v.Bio ?? string.Empty, likeTerm) ||
+                v.Skills.Any(s => EF.Functions.Like(s.Name, likeTerm)));
         }
 
         if (skillId.HasValue)
@@ -60,19 +58,30 @@ public class VolunteerService : IVolunteerService
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var volunteers = await query
+        var volunteerRows = await query
             .OrderBy(v => v.User.FullName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(v => new VolunteerListItemViewModel
+            .Select(v => new
             {
-                Id = v.Id,
+                v.Id,
                 FullName = v.User.FullName ?? v.User.UserName ?? v.User.Email ?? "Unknown user",
-                Bio = v.Bio,
-                ExperienceLevel = v.ExperienceLevel.ToString(),
+                v.Bio,
+                v.ExperienceLevel,
                 Skills = v.Skills.OrderBy(s => s.Name).Select(s => s.Name).ToList()
             })
             .ToListAsync();
+
+        var volunteers = volunteerRows
+            .Select(v => new VolunteerListItemViewModel
+            {
+                Id = v.Id,
+                FullName = v.FullName,
+                Bio = v.Bio,
+                ExperienceLevel = v.ExperienceLevel.ToString(),
+                Skills = v.Skills
+            })
+            .ToList();
 
         var skills = await dbContext.Skills
             .AsNoTracking()

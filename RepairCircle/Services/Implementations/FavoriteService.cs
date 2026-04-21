@@ -28,21 +28,17 @@ public class FavoriteService : IFavoriteService
 
         var query = dbContext.Favorites
             .AsNoTracking()
-            .Include(f => f.Tool)
-                .ThenInclude(t => t.ToolCategory)
-            .Include(f => f.Tool)
-                .ThenInclude(t => t.Location)
             .Where(f => f.UserId == userId)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            var likeTerm = $"%{searchTerm.Trim()}%";
             query = query.Where(f =>
-                f.Tool.Name.ToLower().Contains(normalizedSearchTerm) ||
-                f.Tool.ToolCategory.Name.ToLower().Contains(normalizedSearchTerm) ||
-                f.Tool.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
-                f.Tool.Location.City.ToLower().Contains(normalizedSearchTerm));
+                EF.Functions.Like(f.Tool.Name, likeTerm) ||
+                EF.Functions.Like(f.Tool.ToolCategory.Name, likeTerm) ||
+                EF.Functions.Like(f.Tool.Location.Name, likeTerm) ||
+                EF.Functions.Like(f.Tool.Location.City, likeTerm));
         }
 
         if (onlyAvailable == true)
@@ -54,20 +50,33 @@ public class FavoriteService : IFavoriteService
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var favorites = await query
+        var favoriteRows = await query
             .OrderByDescending(f => f.CreatedOn)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(f => new FavoriteListItemViewModel
+            .Select(f => new
             {
-                ToolId = f.ToolId,
+                f.ToolId,
                 ToolName = f.Tool.Name,
                 ImageUrl = f.Tool.ImageUrl,
                 CategoryName = f.Tool.ToolCategory.Name,
-                LocationName = $"{f.Tool.Location.Name} ({f.Tool.Location.City})",
+                LocationName = f.Tool.Location.Name,
+                City = f.Tool.Location.City,
                 IsAvailable = f.Tool.IsAvailable && f.Tool.Quantity > 0
             })
             .ToListAsync();
+
+        var favorites = favoriteRows
+            .Select(f => new FavoriteListItemViewModel
+            {
+                ToolId = f.ToolId,
+                ToolName = f.ToolName,
+                ImageUrl = f.ImageUrl,
+                CategoryName = f.CategoryName,
+                LocationName = $"{f.LocationName} ({f.City})",
+                IsAvailable = f.IsAvailable
+            })
+            .ToList();
 
         return new FavoriteIndexViewModel
         {

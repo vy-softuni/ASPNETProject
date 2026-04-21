@@ -27,7 +27,7 @@ public class RepairRequestService : IRepairRequestService
         int page = 1,
         int pageSize = 6)
     {
-        return await GetPagedAsync(BuildRequestListQuery(), searchTerm, status, locationId, page, pageSize);
+        return await GetPagedAsync(dbContext.RepairRequests.AsNoTracking(), searchTerm, status, locationId, page, pageSize);
     }
 
     public async Task<RepairRequestIndexViewModel> GetMineAsync(
@@ -39,7 +39,7 @@ public class RepairRequestService : IRepairRequestService
         int pageSize = 6)
     {
         return await GetPagedAsync(
-            BuildRequestListQuery().Where(r => r.SubmittedByUserId == userId),
+            dbContext.RepairRequests.AsNoTracking().Where(r => r.SubmittedByUserId == userId),
             searchTerm,
             status,
             locationId,
@@ -49,26 +49,20 @@ public class RepairRequestService : IRepairRequestService
 
     public async Task<RepairRequestDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null)
     {
-        return await dbContext.RepairRequests
+        var row = await dbContext.RepairRequests
             .AsNoTracking()
-            .Include(r => r.SubmittedByUser)
-            .Include(r => r.AssignedVolunteerProfile)
-                .ThenInclude(v => v!.User)
-            .Include(r => r.Location)
-            .Include(r => r.RepairSession)
-            .Include(r => r.Feedbacks)
-                .ThenInclude(f => f.User)
             .Where(r => r.Id == id)
-            .Select(r => new RepairRequestDetailsViewModel
+            .Select(r => new
             {
-                Id = r.Id,
-                Title = r.Title,
-                Description = r.Description,
-                ItemType = r.ItemType,
-                ImageUrl = r.ImageUrl,
-                RequestReference = r.RequestReference,
-                Status = r.Status.ToString(),
+                r.Id,
+                r.Title,
+                r.Description,
+                r.ItemType,
+                r.ImageUrl,
+                r.RequestReference,
+                r.Status,
                 SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                SubmittedByUserId = r.SubmittedByUserId,
                 AssignedVolunteer = r.AssignedVolunteerProfile != null
                     ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
                     : null,
@@ -78,7 +72,7 @@ public class RepairRequestService : IRepairRequestService
                 Latitude = r.Location.Latitude,
                 Longitude = r.Location.Longitude,
                 RepairSessionTitle = r.RepairSession != null ? r.RepairSession.Title : null,
-                RequestedDate = r.RequestedDate,
+                r.RequestedDate,
                 Feedback = r.Feedbacks
                     .OrderByDescending(f => f.CreatedOn)
                     .Select(f => new RepairRequestFeedbackViewModel
@@ -89,11 +83,36 @@ public class RepairRequestService : IRepairRequestService
                         CreatedOn = f.CreatedOn
                     })
                     .ToList(),
-                CanLeaveFeedback = currentUserId != null &&
-                    r.SubmittedByUserId == currentUserId &&
-                    !r.Feedbacks.Any(f => f.UserId == currentUserId)
+                HasUserFeedback = currentUserId != null && r.Feedbacks.Any(f => f.UserId == currentUserId)
             })
             .FirstOrDefaultAsync();
+
+        if (row is null)
+        {
+            return null;
+        }
+
+        return new RepairRequestDetailsViewModel
+        {
+            Id = row.Id,
+            Title = row.Title,
+            Description = row.Description,
+            ItemType = row.ItemType,
+            ImageUrl = row.ImageUrl,
+            RequestReference = row.RequestReference,
+            Status = row.Status.ToString(),
+            SubmittedBy = row.SubmittedBy,
+            AssignedVolunteer = row.AssignedVolunteer,
+            LocationName = row.LocationName,
+            City = row.City,
+            Address = row.Address,
+            Latitude = row.Latitude,
+            Longitude = row.Longitude,
+            RepairSessionTitle = row.RepairSessionTitle,
+            RequestedDate = row.RequestedDate,
+            Feedback = row.Feedback,
+            CanLeaveFeedback = currentUserId != null && row.SubmittedByUserId == currentUserId && !row.HasUserFeedback
+        };
     }
 
     public async Task<RepairRequestCreateViewModel> GetCreateModelAsync()
@@ -178,7 +197,7 @@ public class RepairRequestService : IRepairRequestService
     }
 
     private async Task<RepairRequestIndexViewModel> GetPagedAsync(
-        IQueryable<RepairRequestListProjection> query,
+        IQueryable<RepairRequest> query,
         string? searchTerm,
         string? status,
         int? locationId,
@@ -190,20 +209,26 @@ public class RepairRequestService : IRepairRequestService
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            var likeTerm = $"%{searchTerm.Trim()}%";
             query = query.Where(r =>
-                r.Title.ToLower().Contains(normalizedSearchTerm) ||
-                r.ItemType.ToLower().Contains(normalizedSearchTerm) ||
-                r.LocationName.ToLower().Contains(normalizedSearchTerm) ||
-                r.SubmittedBy.ToLower().Contains(normalizedSearchTerm) ||
-                (r.AssignedVolunteer != null && r.AssignedVolunteer.ToLower().Contains(normalizedSearchTerm)));
+                EF.Functions.Like(r.Title, likeTerm) ||
+                EF.Functions.Like(r.ItemType, likeTerm) ||
+                EF.Functions.Like(r.Location.Name, likeTerm) ||
+                EF.Functions.Like(r.Location.City, likeTerm) ||
+                EF.Functions.Like(r.SubmittedByUser.FullName ?? string.Empty, likeTerm) ||
+                EF.Functions.Like(r.SubmittedByUser.UserName ?? string.Empty, likeTerm) ||
+                EF.Functions.Like(r.SubmittedByUser.Email ?? string.Empty, likeTerm) ||
+                (r.AssignedVolunteerProfile != null && (
+                    EF.Functions.Like(r.AssignedVolunteerProfile.User.FullName ?? string.Empty, likeTerm) ||
+                    EF.Functions.Like(r.AssignedVolunteerProfile.User.UserName ?? string.Empty, likeTerm) ||
+                    EF.Functions.Like(r.AssignedVolunteerProfile.User.Email ?? string.Empty, likeTerm)
+                )));
         }
 
         if (!string.IsNullOrWhiteSpace(status) &&
             Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
         {
-            var parsedStatusName = parsedStatus.ToString();
-            query = query.Where(r => r.Status == parsedStatusName);
+            query = query.Where(r => r.Status == parsedStatus);
         }
 
         if (locationId.HasValue)
@@ -215,11 +240,39 @@ public class RepairRequestService : IRepairRequestService
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var requests = await query
+        var requestRows = await query
             .OrderByDescending(r => r.RequestedDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(r => new
+            {
+                r.Id,
+                r.Title,
+                r.ItemType,
+                r.Status,
+                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                AssignedVolunteer = r.AssignedVolunteerProfile != null
+                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
+                    : null,
+                LocationName = r.Location.Name,
+                City = r.Location.City,
+                r.RequestedDate
+            })
             .ToListAsync();
+
+        var requests = requestRows
+            .Select(r => new RepairRequestListItemViewModel
+            {
+                Id = r.Id,
+                Title = r.Title,
+                ItemType = r.ItemType,
+                Status = r.Status.ToString(),
+                SubmittedBy = r.SubmittedBy,
+                AssignedVolunteer = r.AssignedVolunteer,
+                LocationName = $"{r.LocationName} ({r.City})",
+                RequestedDate = r.RequestedDate
+            })
+            .ToList();
 
         var locations = await dbContext.Locations
             .AsNoTracking()
@@ -246,36 +299,5 @@ public class RepairRequestService : IRepairRequestService
                 TotalItems = totalItems
             }
         };
-    }
-
-    private IQueryable<RepairRequestListProjection> BuildRequestListQuery()
-    {
-        return dbContext.RepairRequests
-            .AsNoTracking()
-            .Include(r => r.SubmittedByUser)
-            .Include(r => r.AssignedVolunteerProfile)
-                .ThenInclude(v => v!.User)
-            .Include(r => r.Location)
-            .Select(r => new RepairRequestListProjection
-            {
-                Id = r.Id,
-                Title = r.Title,
-                ItemType = r.ItemType,
-                Status = r.Status.ToString(),
-                SubmittedByUserId = r.SubmittedByUserId,
-                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
-                AssignedVolunteer = r.AssignedVolunteerProfile != null
-                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
-                    : null,
-                LocationId = r.LocationId,
-                LocationName = $"{r.Location.Name} ({r.Location.City})",
-                RequestedDate = r.RequestedDate
-            });
-    }
-
-    private sealed class RepairRequestListProjection : RepairRequestListItemViewModel
-    {
-        public string SubmittedByUserId { get; set; } = string.Empty;
-        public int LocationId { get; set; }
     }
 }

@@ -1397,3 +1397,10 @@ code {
         align-items: flex-start;
     }
 }
+
+
+.auth-shell.single-auth { max-width: 520px; margin: 0 auto; }
+.auth-card { padding: 1.5rem; }
+.auth-form .actions { display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem; }
+
+.user-greeting { color: inherit; opacity: 0.9; }

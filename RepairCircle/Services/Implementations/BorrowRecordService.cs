@@ -32,18 +32,16 @@ public class BorrowRecordService : IBorrowRecordService
 
         var query = dbContext.BorrowRecords
             .AsNoTracking()
-            .Include(br => br.Tool)
-                .ThenInclude(t => t.Location)
             .Where(br => br.UserId == userId)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            var likeTerm = $"%{searchTerm.Trim()}%";
             query = query.Where(br =>
-                br.Tool.Name.ToLower().Contains(normalizedSearchTerm) ||
-                br.BorrowReference.ToLower().Contains(normalizedSearchTerm) ||
-                br.Tool.Location.Name.ToLower().Contains(normalizedSearchTerm));
+                EF.Functions.Like(br.Tool.Name, likeTerm) ||
+                EF.Functions.Like(br.BorrowReference, likeTerm) ||
+                EF.Functions.Like(br.Tool.Location.Name, likeTerm));
         }
 
         if (!string.IsNullOrWhiteSpace(status) &&
@@ -56,22 +54,36 @@ public class BorrowRecordService : IBorrowRecordService
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var records = await query
+        var recordRows = await query
             .OrderByDescending(br => br.BorrowDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(br => new
+            {
+                br.Id,
+                ToolName = br.Tool.Name,
+                br.BorrowReference,
+                br.BorrowDate,
+                br.DueDate,
+                br.ReturnedDate,
+                br.Status,
+                LocationName = br.Tool.Location.Name
+            })
+            .ToListAsync();
+
+        var records = recordRows
             .Select(br => new BorrowRecordListItemViewModel
             {
                 Id = br.Id,
-                ToolName = br.Tool.Name,
+                ToolName = br.ToolName,
                 BorrowReference = br.BorrowReference,
                 BorrowDate = br.BorrowDate,
                 DueDate = br.DueDate,
                 ReturnedDate = br.ReturnedDate,
                 Status = br.Status.ToString(),
-                LocationName = br.Tool.Location.Name
+                LocationName = br.LocationName
             })
-            .ToListAsync();
+            .ToList();
 
         return new BorrowRecordIndexViewModel
         {
@@ -111,20 +123,18 @@ public class BorrowRecordService : IBorrowRecordService
 
     public async Task<BorrowRecordDetailsViewModel?> GetByIdForUserAsync(int id, string userId)
     {
-        return await dbContext.BorrowRecords
+        var row = await dbContext.BorrowRecords
             .AsNoTracking()
-            .Include(br => br.Tool)
-                .ThenInclude(t => t.Location)
             .Where(br => br.Id == id && br.UserId == userId)
-            .Select(br => new BorrowRecordDetailsViewModel
+            .Select(br => new
             {
-                Id = br.Id,
+                br.Id,
                 ToolName = br.Tool.Name,
-                BorrowReference = br.BorrowReference,
-                BorrowDate = br.BorrowDate,
-                DueDate = br.DueDate,
-                ReturnedDate = br.ReturnedDate,
-                Status = br.Status.ToString(),
+                br.BorrowReference,
+                br.BorrowDate,
+                br.DueDate,
+                br.ReturnedDate,
+                br.Status,
                 LocationName = br.Tool.Location.Name,
                 Address = br.Tool.Location.Address,
                 City = br.Tool.Location.City,
@@ -132,6 +142,27 @@ public class BorrowRecordService : IBorrowRecordService
                 ToolDescription = br.Tool.Description
             })
             .FirstOrDefaultAsync();
+
+        if (row is null)
+        {
+            return null;
+        }
+
+        return new BorrowRecordDetailsViewModel
+        {
+            Id = row.Id,
+            ToolName = row.ToolName,
+            BorrowReference = row.BorrowReference,
+            BorrowDate = row.BorrowDate,
+            DueDate = row.DueDate,
+            ReturnedDate = row.ReturnedDate,
+            Status = row.Status.ToString(),
+            LocationName = row.LocationName,
+            Address = row.Address,
+            City = row.City,
+            ToolImageUrl = row.ToolImageUrl,
+            ToolDescription = row.ToolDescription
+        };
     }
 
     public async Task<int> CreateAsync(string userId, BorrowRecordCreateInputModel model)

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RepairCircle.Services.Interfaces;
+using RepairCircle.ViewModels.Favorites;
 
 namespace RepairCircle.Controllers;
 
@@ -23,8 +24,17 @@ public class FavoritesController : Controller
             return Challenge();
         }
 
-        var model = await favoriteService.GetUserFavoritesAsync(userId, searchTerm, onlyAvailable, page);
-        return View(model);
+        try
+        {
+            var model = await favoriteService.GetUserFavoritesAsync(userId, searchTerm, onlyAvailable, page);
+            return View(model);
+        }
+        catch
+        {
+            TempData["StatusMessage"] = "Your favorites could not be loaded right now. Please try again later.";
+            TempData["StatusType"] = "error";
+            return View(new FavoriteIndexViewModel());
+        }
     }
 
     [HttpPost]

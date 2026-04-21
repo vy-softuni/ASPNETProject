@@ -19,8 +19,17 @@ public class RepairRequestsController : Controller
 
     public async Task<IActionResult> Index(string? searchTerm, string? status, int? locationId, int page = 1)
     {
-        var model = await repairRequestService.GetAllAsync(searchTerm, status, locationId, page);
-        return View(model);
+        try
+        {
+            var model = await repairRequestService.GetAllAsync(searchTerm, status, locationId, page);
+            return View(model);
+        }
+        catch
+        {
+            TempData["StatusMessage"] = "Repair requests could not be loaded right now. Please try again later.";
+            TempData["StatusType"] = "error";
+            return View(new RepairRequestIndexViewModel());
+        }
     }
 
     [Authorize]
@@ -32,9 +41,19 @@ public class RepairRequestsController : Controller
             return Challenge();
         }
 
-        var model = await repairRequestService.GetMineAsync(userId, searchTerm, status, locationId, page);
-        ViewData["Title"] = "My Repair Requests";
-        return View("Index", model);
+        try
+        {
+            var model = await repairRequestService.GetMineAsync(userId, searchTerm, status, locationId, page);
+            ViewData["Title"] = "My Repair Requests";
+            return View("Index", model);
+        }
+        catch
+        {
+            TempData["StatusMessage"] = "Your repair requests could not be loaded right now. Please try again later.";
+            TempData["StatusType"] = "error";
+            ViewData["Title"] = "My Repair Requests";
+            return View("Index", new RepairRequestIndexViewModel());
+        }
     }
 
     public async Task<IActionResult> Details(int id)

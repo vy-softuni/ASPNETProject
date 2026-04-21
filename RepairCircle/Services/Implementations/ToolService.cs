@@ -30,18 +30,16 @@ public class ToolService : IToolService
 
         var toolsQuery = dbContext.Tools
             .AsNoTracking()
-            .Include(t => t.ToolCategory)
-            .Include(t => t.Location)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
+            var likeTerm = $"%{searchTerm.Trim()}%";
             toolsQuery = toolsQuery.Where(t =>
-                t.Name.ToLower().Contains(normalizedSearchTerm) ||
-                t.Description.ToLower().Contains(normalizedSearchTerm) ||
-                t.Location.City.ToLower().Contains(normalizedSearchTerm) ||
-                t.ToolCategory.Name.ToLower().Contains(normalizedSearchTerm));
+                EF.Functions.Like(t.Name, likeTerm) ||
+                EF.Functions.Like(t.Description, likeTerm) ||
+                EF.Functions.Like(t.Location.City, likeTerm) ||
+                EF.Functions.Like(t.ToolCategory.Name, likeTerm));
         }
 
         if (categoryId.HasValue)
@@ -69,11 +67,27 @@ public class ToolService : IToolService
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var tools = await toolsQuery
+        var toolRows = await toolsQuery
             .OrderByDescending(t => t.IsAvailable && t.Quantity > 0)
             .ThenBy(t => t.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Description,
+                t.ImageUrl,
+                t.Condition,
+                t.IsAvailable,
+                t.Quantity,
+                CategoryName = t.ToolCategory.Name,
+                LocationName = t.Location.Name,
+                City = t.Location.City
+            })
+            .ToListAsync();
+
+        var tools = toolRows
             .Select(t => new ToolListItemViewModel
             {
                 Id = t.Id,
@@ -83,11 +97,11 @@ public class ToolService : IToolService
                 Condition = t.Condition.ToString(),
                 IsAvailable = t.IsAvailable,
                 Quantity = t.Quantity,
-                CategoryName = t.ToolCategory.Name,
-                LocationName = t.Location.Name,
-                City = t.Location.City
+                CategoryName = t.CategoryName,
+                LocationName = t.LocationName,
+                City = t.City
             })
-            .ToListAsync();
+            .ToList();
 
         var categories = await dbContext.ToolCategories
             .AsNoTracking()
@@ -131,22 +145,18 @@ public class ToolService : IToolService
 
     public async Task<ToolDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null)
     {
-        return await dbContext.Tools
+        var row = await dbContext.Tools
             .AsNoTracking()
-            .Include(t => t.ToolCategory)
-            .Include(t => t.Location)
-            .Include(t => t.Favorites)
-            .Include(t => t.BorrowRecords)
             .Where(t => t.Id == id)
-            .Select(t => new ToolDetailsViewModel
+            .Select(t => new
             {
-                Id = t.Id,
-                Name = t.Name,
-                Description = t.Description,
-                ImageUrl = t.ImageUrl,
-                Condition = t.Condition.ToString(),
-                IsAvailable = t.IsAvailable,
-                Quantity = t.Quantity,
+                t.Id,
+                t.Name,
+                t.Description,
+                t.ImageUrl,
+                t.Condition,
+                t.IsAvailable,
+                t.Quantity,
                 CategoryName = t.ToolCategory.Name,
                 LocationName = t.Location.Name,
                 Address = t.Location.Address,
@@ -158,5 +168,30 @@ public class ToolService : IToolService
                 IsFavoritedByCurrentUser = currentUserId != null && t.Favorites.Any(f => f.UserId == currentUserId)
             })
             .FirstOrDefaultAsync();
+
+        if (row is null)
+        {
+            return null;
+        }
+
+        return new ToolDetailsViewModel
+        {
+            Id = row.Id,
+            Name = row.Name,
+            Description = row.Description,
+            ImageUrl = row.ImageUrl,
+            Condition = row.Condition.ToString(),
+            IsAvailable = row.IsAvailable,
+            Quantity = row.Quantity,
+            CategoryName = row.CategoryName,
+            LocationName = row.LocationName,
+            Address = row.Address,
+            City = row.City,
+            Latitude = row.Latitude,
+            Longitude = row.Longitude,
+            FavoritesCount = row.FavoritesCount,
+            BorrowRecordsCount = row.BorrowRecordsCount,
+            IsFavoritedByCurrentUser = row.IsFavoritedByCurrentUser
+        };
     }
 }
