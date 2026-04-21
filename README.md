@@ -642,7 +642,7 @@ Recommended screenshots (not all shown):
 
 Example screenshot section format:
 
-```md
+```
 ## Screenshots
 
 ### Home Page
