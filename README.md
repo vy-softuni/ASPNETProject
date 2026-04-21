@@ -647,6 +647,7 @@ Example screenshot section format:
 
 ### Home Page
 ![Home Page](RepairCircle/docs/screenshots/home-page.png)
+<img src="RepairCircle/docs/screenshots/home-page.png" alt="Home Page" width="800">
 
 ### Admin Dashboard
 ![Admin Dashboard](RepairCircle/docs/screenshots/admin-dashboard.png)
