@@ -646,10 +646,10 @@ Example screenshot section format:
 ## Screenshots
 
 ### Home Page
-![Home Page](docs/screenshots/home.png)
+![Home Page](RepairCircle/docs/screenshots/home.png)
 
 ### Admin Dashboard
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
+![Admin Dashboard](RepairCircle/docs/screenshots/admin-dashboard.png)
 ```
 
 ---
