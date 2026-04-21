@@ -23,73 +23,78 @@ public class FavoriteService : IFavoriteService
         int page = 1,
         int pageSize = 6)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 6 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 6 : pageSize;
 
-        var query = dbContext.Favorites
+            var favoritesData = await dbContext.Favorites
             .AsNoTracking()
+            .Include(f => f.Tool)
+                .ThenInclude(t => t.ToolCategory)
+            .Include(f => f.Tool)
+                .ThenInclude(t => t.Location)
             .Where(f => f.UserId == userId)
-            .AsQueryable();
+            .ToListAsync();
+
+        IEnumerable<Favorite> filteredFavorites = favoritesData;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var likeTerm = $"%{searchTerm.Trim()}%";
-            query = query.Where(f =>
-                EF.Functions.Like(f.Tool.Name, likeTerm) ||
-                EF.Functions.Like(f.Tool.ToolCategory.Name, likeTerm) ||
-                EF.Functions.Like(f.Tool.Location.Name, likeTerm) ||
-                EF.Functions.Like(f.Tool.Location.City, likeTerm));
+            var term = searchTerm.Trim();
+            filteredFavorites = filteredFavorites.Where(f =>
+                f.Tool.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                f.Tool.ToolCategory.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                f.Tool.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                f.Tool.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         if (onlyAvailable == true)
         {
-            query = query.Where(f => f.Tool.IsAvailable && f.Tool.Quantity > 0);
+            filteredFavorites = filteredFavorites.Where(f => f.Tool.IsAvailable && f.Tool.Quantity > 0);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems = filteredFavorites.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var favoriteRows = await query
+        var favorites = filteredFavorites
             .OrderByDescending(f => f.CreatedOn)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(f => new
-            {
-                f.ToolId,
-                ToolName = f.Tool.Name,
-                ImageUrl = f.Tool.ImageUrl,
-                CategoryName = f.Tool.ToolCategory.Name,
-                LocationName = f.Tool.Location.Name,
-                City = f.Tool.Location.City,
-                IsAvailable = f.Tool.IsAvailable && f.Tool.Quantity > 0
-            })
-            .ToListAsync();
-
-        var favorites = favoriteRows
             .Select(f => new FavoriteListItemViewModel
             {
                 ToolId = f.ToolId,
-                ToolName = f.ToolName,
-                ImageUrl = f.ImageUrl,
-                CategoryName = f.CategoryName,
-                LocationName = $"{f.LocationName} ({f.City})",
-                IsAvailable = f.IsAvailable
+                ToolName = f.Tool.Name,
+                ImageUrl = f.Tool.ImageUrl,
+                CategoryName = f.Tool.ToolCategory.Name,
+                LocationName = $"{f.Tool.Location.Name} ({f.Tool.Location.City})",
+                IsAvailable = f.Tool.IsAvailable && f.Tool.Quantity > 0
             })
             .ToList();
 
-        return new FavoriteIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            OnlyAvailable = onlyAvailable,
-            Items = favorites,
-            Pagination = new PaginationViewModel
+            return new FavoriteIndexViewModel
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            }
-        };
+                SearchTerm = searchTerm,
+                OnlyAvailable = onlyAvailable,
+                Items = favorites,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new FavoriteIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                OnlyAvailable = onlyAvailable,
+                Pagination = new PaginationViewModel { CurrentPage = 1, PageSize = pageSize, TotalItems = 0 }
+            };
+        }
     }
 
     public async Task AddAsync(string userId, int toolId)
@@ -124,41 +129,38 @@ public class FavoriteService : IFavoriteService
 
     public async Task<FavoriteToggleResultViewModel?> ToggleAsync(string userId, int toolId)
     {
-        var toolExists = await dbContext.Tools.AnyAsync(t => t.Id == toolId);
-        if (!toolExists)
+        var tool = await dbContext.Tools
+            .Include(t => t.Favorites)
+            .FirstOrDefaultAsync(t => t.Id == toolId);
+
+        if (tool is null)
         {
             return null;
         }
 
-        var favorite = await dbContext.Favorites.FirstOrDefaultAsync(f => f.UserId == userId && f.ToolId == toolId);
-        var isFavorited = false;
-        var message = string.Empty;
+        var existingFavorite = tool.Favorites.FirstOrDefault(f => f.UserId == userId);
+        var isFavorited = existingFavorite is null;
 
-        if (favorite is null)
+        if (existingFavorite is null)
         {
-            await dbContext.Favorites.AddAsync(new Favorite
+            tool.Favorites.Add(new Favorite
             {
                 UserId = userId,
                 ToolId = toolId
             });
-            isFavorited = true;
-            message = "Tool added to favorites.";
         }
         else
         {
-            dbContext.Favorites.Remove(favorite);
-            message = "Tool removed from favorites.";
+            dbContext.Favorites.Remove(existingFavorite);
         }
 
         await dbContext.SaveChangesAsync();
 
-        var favoritesCount = await dbContext.Favorites.CountAsync(f => f.ToolId == toolId);
-
         return new FavoriteToggleResultViewModel
         {
             IsFavorited = isFavorited,
-            FavoritesCount = favoritesCount,
-            Message = message
+            FavoritesCount = tool.Favorites.Count + (isFavorited ? 1 : -1),
+            Message = isFavorited ? "Tool added to favorites." : "Tool removed from favorites."
         };
     }
 }

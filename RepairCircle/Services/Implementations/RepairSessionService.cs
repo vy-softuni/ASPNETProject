@@ -24,32 +24,34 @@ public class RepairSessionService : IRepairSessionService
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
 
-        var query = dbContext.RepairSessions
+        var sessionsData = await dbContext.RepairSessions
             .AsNoTracking()
             .Include(rs => rs.Location)
             .Where(rs => rs.EndDate >= DateTime.UtcNow)
-            .AsQueryable();
+            .ToListAsync();
+
+        IEnumerable<RepairCircle.Data.Models.RepairSession> filteredSessions = sessionsData;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var normalizedSearchTerm = searchTerm.Trim().ToLower();
-            query = query.Where(rs =>
-                rs.Title.ToLower().Contains(normalizedSearchTerm) ||
-                rs.Description.ToLower().Contains(normalizedSearchTerm) ||
-                rs.Location.Name.ToLower().Contains(normalizedSearchTerm) ||
-                rs.Location.City.ToLower().Contains(normalizedSearchTerm));
+            var term = searchTerm.Trim();
+            filteredSessions = filteredSessions.Where(rs =>
+                rs.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                rs.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                rs.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                rs.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         if (locationId.HasValue)
         {
-            query = query.Where(rs => rs.LocationId == locationId.Value);
+            filteredSessions = filteredSessions.Where(rs => rs.LocationId == locationId.Value);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems = filteredSessions.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var sessions = await query
+        var sessions = filteredSessions
             .OrderBy(rs => rs.StartDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -65,7 +67,7 @@ public class RepairSessionService : IRepairSessionService
                 LocationName = rs.Location.Name,
                 City = rs.Location.City
             })
-            .ToListAsync();
+            .ToList();
 
         var locations = await dbContext.Locations
             .AsNoTracking()

@@ -1,6 +1,8 @@
+@using System.Linq
 @model FavoriteIndexViewModel
 @{
     ViewData["Title"] = "My Favorite Tools";
+    var items = Model?.Items ?? Array.Empty<FavoriteListItemViewModel>();
 }
 
 <section class="page-header card">
@@ -17,8 +19,7 @@
         </div>
         <div class="form-field checkbox-field">
             <label class="checkbox-label">
-                <input asp-for="OnlyAvailable" type="checkbox" value="true" />
-                Show only currently available tools
+                <input asp-for="OnlyAvailable" type="checkbox" value="true" /> Show only currently available tools
             </label>
         </div>
         <div class="actions">
@@ -28,7 +29,7 @@
     </form>
 </section>
 
-@if (!Model.Items.Any())
+@if (!items.Any())
 {
     <section class="empty-state">
         <h2>No favorites yet</h2>
@@ -38,7 +39,7 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var tool in Model.Items)
+        @foreach (var tool in items)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
@@ -59,5 +60,3 @@ else
         }
     </section>
 }
-
-<partial name="_PaginationPartial" model="Model.Pagination" />

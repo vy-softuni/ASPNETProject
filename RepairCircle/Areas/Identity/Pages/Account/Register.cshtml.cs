@@ -32,20 +32,25 @@ public class RegisterModel : PageModel
 
     public class InputModel
     {
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "Please enter your full name.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Your full name must be between 2 and 100 characters.")]
         [Display(Name = "Full name")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Please enter your email address.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [Display(Name = "Email address")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100, MinimumLength = 6)]
+        [Required(ErrorMessage = "Please create a password.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Your password must be at least 8 characters long.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$",
+            ErrorMessage = "Password must contain an uppercase letter, a lowercase letter, a digit, and a special character.")]
         [DataType(DataType.Password)]
+        [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Please confirm your password.")]
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
         [Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
@@ -69,11 +74,19 @@ public class RegisterModel : PageModel
             return Page();
         }
 
+        var normalizedEmail = Input.Email.Trim();
+        var existingUser = await userManager.FindByEmailAsync(normalizedEmail);
+        if (existingUser is not null)
+        {
+            ModelState.AddModelError("Input.Email", "An account with this email address already exists.");
+            return Page();
+        }
+
         var user = new ApplicationUser
         {
             FullName = Input.FullName.Trim(),
-            Email = Input.Email,
-            UserName = Input.Email,
+            Email = normalizedEmail,
+            UserName = normalizedEmail,
             CreatedOn = DateTime.UtcNow,
             EmailConfirmed = true
         };

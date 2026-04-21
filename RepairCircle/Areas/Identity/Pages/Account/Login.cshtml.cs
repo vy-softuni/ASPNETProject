@@ -25,15 +25,17 @@ public class LoginModel : PageModel
 
     public class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Please enter your email address.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [Display(Name = "Email address")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Please enter your password.")]
         [DataType(DataType.Password)]
+        [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;
 
-        [Display(Name = "Remember me")]
+        [Display(Name = "Keep me signed in")]
         public bool RememberMe { get; set; }
 
         public string? ReturnUrl { get; set; }
@@ -61,7 +63,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var result = await signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await signInManager.PasswordSignInAsync(Input.Email.Trim(), Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             logger.LogInformation("User logged in.");
@@ -70,11 +72,11 @@ public class LoginModel : PageModel
 
         if (result.IsLockedOut)
         {
-            ModelState.AddModelError(string.Empty, "This account is locked.");
+            ModelState.AddModelError(string.Empty, "This account is temporarily locked. Please try again later.");
             return Page();
         }
 
-        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        ModelState.AddModelError(string.Empty, "The email or password is incorrect.");
         return Page();
     }
 }

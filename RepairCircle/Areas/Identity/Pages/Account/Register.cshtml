@@ -4,42 +4,63 @@
     ViewData["Title"] = "Register";
 }
 
-<section class="page-header card">
-    <span class="eyebrow">Account</span>
-    <h1>Create account</h1>
-    <p>Create a local RepairCircle account. No external sign-in providers are used in this project.</p>
-</section>
+<section class="auth-hero auth-hero-premium">
+    <div class="auth-hero-copy">
+        <span class="eyebrow">✨ Join the community</span>
+        <h1>Create your RepairCircle account</h1>
+        <p>Register to request repairs, borrow tools, save favorites, and volunteer for community sessions.</p>
+        <div class="auth-password-rules card">
+            <h3>Password rules</h3>
+            <ul class="auth-feature-list compact">
+                <li>At least 8 characters</li>
+                <li>At least 1 uppercase letter</li>
+                <li>At least 1 lowercase letter</li>
+                <li>At least 1 digit and 1 special character</li>
+            </ul>
+        </div>
+    </div>
 
-<div class="auth-shell single-auth card auth-card">
-    <form id="registerForm" method="post" class="auth-form">
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-        <input asp-for="Input.ReturnUrl" type="hidden" />
-        <div class="form-field">
-            <label asp-for="Input.FullName"></label>
-            <input asp-for="Input.FullName" />
-            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+    <div class="auth-shell card auth-card elevated-card">
+        <div class="auth-card-header">
+            <h2>Create account</h2><div class="auth-icon-circle">🛠️</div>
+            <p>All fields are required. A local account is enough for this project.</p>
         </div>
-        <div class="form-field">
-            <label asp-for="Input.Email"></label>
-            <input asp-for="Input.Email" autocomplete="username" />
-            <span asp-validation-for="Input.Email" class="text-danger"></span>
-        </div>
-        <div class="form-field">
-            <label asp-for="Input.Password"></label>
-            <input asp-for="Input.Password" autocomplete="new-password" />
-            <span asp-validation-for="Input.Password" class="text-danger"></span>
-        </div>
-        <div class="form-field">
-            <label asp-for="Input.ConfirmPassword"></label>
-            <input asp-for="Input.ConfirmPassword" autocomplete="new-password" />
-            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-        </div>
-        <div class="actions">
-            <button id="registerSubmit" type="submit" class="btn btn-primary">Register</button>
-            <a class="btn btn-secondary" asp-page="./Login" asp-route-returnUrl="@Model.Input.ReturnUrl">Back to login</a>
-        </div>
-    </form>
-</div>
+
+        <form id="registerForm" method="post" class="auth-form">
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+            <input asp-for="Input.ReturnUrl" type="hidden" />
+
+            <div class="form-field">
+                <label asp-for="Input.FullName"></label>
+                <input asp-for="Input.FullName" placeholder="Your full name" />
+                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" autocomplete="username" placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" autocomplete="new-password" placeholder="Create a strong password" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.ConfirmPassword"></label>
+                <input asp-for="Input.ConfirmPassword" autocomplete="new-password" placeholder="Repeat your password" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="actions">
+                <button id="registerSubmit" type="submit" class="btn btn-primary btn-wide">Create account</button>
+                <a class="btn btn-secondary btn-wide" asp-page="./Login" asp-route-returnUrl="@Model.Input.ReturnUrl">Back to login</a>
+            </div>
+        </form>
+    </div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -30,58 +30,48 @@ public class BorrowRecordService : IBorrowRecordService
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 10 : pageSize;
 
-        var query = dbContext.BorrowRecords
+        var recordsData = await dbContext.BorrowRecords
             .AsNoTracking()
+            .Include(br => br.Tool)
+                .ThenInclude(t => t.Location)
             .Where(br => br.UserId == userId)
-            .AsQueryable();
+            .ToListAsync();
+
+        IEnumerable<BorrowRecord> filteredRecords = recordsData;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var likeTerm = $"%{searchTerm.Trim()}%";
-            query = query.Where(br =>
-                EF.Functions.Like(br.Tool.Name, likeTerm) ||
-                EF.Functions.Like(br.BorrowReference, likeTerm) ||
-                EF.Functions.Like(br.Tool.Location.Name, likeTerm));
+            var term = searchTerm.Trim();
+            filteredRecords = filteredRecords.Where(br =>
+                br.Tool.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                br.BorrowReference.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                br.Tool.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(status) &&
             Enum.TryParse<BorrowStatus>(status, out var parsedStatus))
         {
-            query = query.Where(br => br.Status == parsedStatus);
+            filteredRecords = filteredRecords.Where(br => br.Status == parsedStatus);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems = filteredRecords.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var recordRows = await query
+        var records = filteredRecords
             .OrderByDescending(br => br.BorrowDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(br => new
-            {
-                br.Id,
-                ToolName = br.Tool.Name,
-                br.BorrowReference,
-                br.BorrowDate,
-                br.DueDate,
-                br.ReturnedDate,
-                br.Status,
-                LocationName = br.Tool.Location.Name
-            })
-            .ToListAsync();
-
-        var records = recordRows
             .Select(br => new BorrowRecordListItemViewModel
             {
                 Id = br.Id,
-                ToolName = br.ToolName,
+                ToolName = br.Tool.Name,
                 BorrowReference = br.BorrowReference,
                 BorrowDate = br.BorrowDate,
                 DueDate = br.DueDate,
                 ReturnedDate = br.ReturnedDate,
                 Status = br.Status.ToString(),
-                LocationName = br.LocationName
+                LocationName = br.Tool.Location.Name
             })
             .ToList();
 

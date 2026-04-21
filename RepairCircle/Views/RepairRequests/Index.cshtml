@@ -1,6 +1,10 @@
+@using System.Linq
 @model RepairRequestIndexViewModel
 @{
     ViewData["Title"] = ViewData["Title"] as string ?? "Repair Requests";
+    var requests = Model?.Requests ?? Array.Empty<RepairRequestListItemViewModel>();
+    var locations = Model?.Locations ?? Array.Empty<LookupViewModel>();
+    var statuses = Model?.Statuses ?? Array.Empty<string>();
 }
 
 <section class="page-header card">
@@ -19,7 +23,7 @@
             <label asp-for="Status">Status</label>
             <select asp-for="Status">
                 <option value="">All statuses</option>
-                @foreach (var status in Model.Statuses)
+                @foreach (var status in statuses)
                 {
                     <option value="@status">@status</option>
                 }
@@ -29,7 +33,7 @@
             <label asp-for="LocationId">Location</label>
             <select asp-for="LocationId">
                 <option value="">All locations</option>
-                @foreach (var location in Model.Locations)
+                @foreach (var location in locations)
                 {
                     <option value="@location.Id">@location.Name</option>
                 }
@@ -42,21 +46,32 @@
     </form>
 </section>
 
-@if (!Model.Requests.Any())
+@if (!requests.Any())
 {
     <section class="empty-state">
         <h2>No repair requests found</h2>
-        <p>New requests will appear here once users start submitting items for repair.</p>
+        <p>Try different filters or add a new request.</p>
     </section>
 }
 else
 {
     <section class="grid grid-2">
-        @foreach (var request in Model.Requests)
+        @foreach (var request in requests)
         {
-            <partial name="_RepairRequestCardPartial" model="request" />
+            <article class="card item-card">
+                <div class="item-card-topline">
+                    <span class="badge">@request.ItemType</span>
+                    <span class="status-badge">@request.Status</span>
+                </div>
+                <h3>@request.Title</h3>
+                <p><strong>Submitted by:</strong> @request.SubmittedBy</p>
+                <p><strong>Volunteer:</strong> @(request.AssignedVolunteer ?? "Awaiting assignment")</p>
+                <p><strong>Location:</strong> @request.LocationName</p>
+                <p><strong>Requested on:</strong> @request.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy")</p>
+                <div class="actions">
+                    <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="Details" asp-route-id="@request.Id">Open request</a>
+                </div>
+            </article>
         }
     </section>
 }
-
-<partial name="_PaginationPartial" model="Model.Pagination" />

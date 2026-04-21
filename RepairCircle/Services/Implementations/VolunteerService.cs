@@ -27,59 +27,52 @@ public class VolunteerService : IVolunteerService
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? 6 : pageSize;
 
-        var query = dbContext.VolunteerProfiles
+        var profiles = await dbContext.VolunteerProfiles
             .AsNoTracking()
+            .Include(v => v.User)
+            .Include(v => v.Skills)
             .Where(v => v.IsApproved)
-            .AsQueryable();
+            .ToListAsync();
+
+        IEnumerable<VolunteerProfile> filteredProfiles = profiles;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var likeTerm = $"%{searchTerm.Trim()}%";
-            query = query.Where(v =>
-                EF.Functions.Like(v.User.FullName ?? string.Empty, likeTerm) ||
-                EF.Functions.Like(v.User.UserName ?? string.Empty, likeTerm) ||
-                EF.Functions.Like(v.User.Email ?? string.Empty, likeTerm) ||
-                EF.Functions.Like(v.Bio ?? string.Empty, likeTerm) ||
-                v.Skills.Any(s => EF.Functions.Like(s.Name, likeTerm)));
+            var term = searchTerm.Trim();
+            filteredProfiles = filteredProfiles.Where(v =>
+                (v.User.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (v.User.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (v.User.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (v.Bio?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                v.Skills.Any(s => s.Name.Contains(term, StringComparison.OrdinalIgnoreCase)));
         }
 
         if (skillId.HasValue)
         {
-            query = query.Where(v => v.Skills.Any(s => s.Id == skillId.Value));
+            filteredProfiles = filteredProfiles.Where(v => v.Skills.Any(s => s.Id == skillId.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(experienceLevel) &&
             Enum.TryParse<ExperienceLevel>(experienceLevel, out var parsedExperienceLevel))
         {
-            query = query.Where(v => v.ExperienceLevel == parsedExperienceLevel);
+            filteredProfiles = filteredProfiles.Where(v => v.ExperienceLevel == parsedExperienceLevel);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems = filteredProfiles.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var volunteerRows = await query
-            .OrderBy(v => v.User.FullName)
+        var volunteers = filteredProfiles
+            .OrderBy(v => v.User.FullName ?? v.User.UserName ?? v.User.Email)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(v => new
-            {
-                v.Id,
-                FullName = v.User.FullName ?? v.User.UserName ?? v.User.Email ?? "Unknown user",
-                v.Bio,
-                v.ExperienceLevel,
-                Skills = v.Skills.OrderBy(s => s.Name).Select(s => s.Name).ToList()
-            })
-            .ToListAsync();
-
-        var volunteers = volunteerRows
             .Select(v => new VolunteerListItemViewModel
             {
                 Id = v.Id,
-                FullName = v.FullName,
+                FullName = v.User.FullName ?? v.User.UserName ?? v.User.Email ?? "Unknown user",
                 Bio = v.Bio,
                 ExperienceLevel = v.ExperienceLevel.ToString(),
-                Skills = v.Skills
+                Skills = v.Skills.OrderBy(s => s.Name).Select(s => s.Name).ToList()
             })
             .ToList();
 

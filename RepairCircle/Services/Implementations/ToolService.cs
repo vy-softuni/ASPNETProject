@@ -25,69 +25,59 @@ public class ToolService : IToolService
         int page = 1,
         int pageSize = 9)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 9 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 9 : pageSize;
 
-        var toolsQuery = dbContext.Tools
-            .AsNoTracking()
-            .AsQueryable();
+            var toolsData = await dbContext.Tools
+                .AsNoTracking()
+                .Include(t => t.ToolCategory)
+                .Include(t => t.Location)
+                .ToListAsync();
+
+        IEnumerable<RepairCircle.Data.Models.Tool> filteredTools = toolsData;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var likeTerm = $"%{searchTerm.Trim()}%";
-            toolsQuery = toolsQuery.Where(t =>
-                EF.Functions.Like(t.Name, likeTerm) ||
-                EF.Functions.Like(t.Description, likeTerm) ||
-                EF.Functions.Like(t.Location.City, likeTerm) ||
-                EF.Functions.Like(t.ToolCategory.Name, likeTerm));
+            var term = searchTerm.Trim();
+            filteredTools = filteredTools.Where(t =>
+                t.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                t.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                t.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                t.ToolCategory.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         if (categoryId.HasValue)
         {
-            toolsQuery = toolsQuery.Where(t => t.ToolCategoryId == categoryId.Value);
+            filteredTools = filteredTools.Where(t => t.ToolCategoryId == categoryId.Value);
         }
 
         if (locationId.HasValue)
         {
-            toolsQuery = toolsQuery.Where(t => t.LocationId == locationId.Value);
+            filteredTools = filteredTools.Where(t => t.LocationId == locationId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(condition) &&
             Enum.TryParse<ToolCondition>(condition, out var parsedCondition))
         {
-            toolsQuery = toolsQuery.Where(t => t.Condition == parsedCondition);
+            filteredTools = filteredTools.Where(t => t.Condition == parsedCondition);
         }
 
         if (onlyAvailable == true)
         {
-            toolsQuery = toolsQuery.Where(t => t.IsAvailable && t.Quantity > 0);
+            filteredTools = filteredTools.Where(t => t.IsAvailable && t.Quantity > 0);
         }
 
-        var totalItems = await toolsQuery.CountAsync();
+        var totalItems = filteredTools.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var toolRows = await toolsQuery
+        var tools = filteredTools
             .OrderByDescending(t => t.IsAvailable && t.Quantity > 0)
             .ThenBy(t => t.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(t => new
-            {
-                t.Id,
-                t.Name,
-                t.Description,
-                t.ImageUrl,
-                t.Condition,
-                t.IsAvailable,
-                t.Quantity,
-                CategoryName = t.ToolCategory.Name,
-                LocationName = t.Location.Name,
-                City = t.Location.City
-            })
-            .ToListAsync();
-
-        var tools = toolRows
             .Select(t => new ToolListItemViewModel
             {
                 Id = t.Id,
@@ -97,9 +87,9 @@ public class ToolService : IToolService
                 Condition = t.Condition.ToString(),
                 IsAvailable = t.IsAvailable,
                 Quantity = t.Quantity,
-                CategoryName = t.CategoryName,
-                LocationName = t.LocationName,
-                City = t.City
+                CategoryName = t.ToolCategory.Name,
+                LocationName = t.Location.Name,
+                City = t.Location.City
             })
             .ToList();
 
@@ -123,24 +113,38 @@ public class ToolService : IToolService
             })
             .ToListAsync();
 
-        return new ToolIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            CategoryId = categoryId,
-            LocationId = locationId,
-            Condition = condition,
-            OnlyAvailable = onlyAvailable,
-            Categories = categories,
-            Locations = locations,
-            Conditions = Enum.GetNames<ToolCondition>(),
-            Tools = tools,
-            Pagination = new PaginationViewModel
+            return new ToolIndexViewModel
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            }
-        };
+                SearchTerm = searchTerm,
+                CategoryId = categoryId,
+                LocationId = locationId,
+                Condition = condition,
+                OnlyAvailable = onlyAvailable,
+                Categories = categories,
+                Locations = locations,
+                Conditions = Enum.GetNames<ToolCondition>(),
+                Tools = tools,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new ToolIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                CategoryId = categoryId,
+                LocationId = locationId,
+                Condition = condition,
+                OnlyAvailable = onlyAvailable,
+                Conditions = Enum.GetNames<ToolCondition>(),
+                Pagination = new PaginationViewModel { CurrentPage = 1, PageSize = pageSize, TotalItems = 0 }
+            };
+        }
     }
 
     public async Task<ToolDetailsViewModel?> GetByIdAsync(int id, string? currentUserId = null)

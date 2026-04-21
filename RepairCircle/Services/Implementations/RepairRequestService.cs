@@ -197,79 +197,73 @@ public class RepairRequestService : IRepairRequestService
     }
 
     private async Task<RepairRequestIndexViewModel> GetPagedAsync(
-        IQueryable<RepairRequest> query,
+        IQueryable<RepairCircle.Data.Models.RepairRequest> query,
         string? searchTerm,
         string? status,
         int? locationId,
         int page,
         int pageSize)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 6 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 6 : pageSize;
+
+            var requestsData = await query
+            .Include(r => r.SubmittedByUser)
+            .Include(r => r.AssignedVolunteerProfile)
+                .ThenInclude(v => v!.User)
+            .Include(r => r.Location)
+            .ToListAsync();
+
+        IEnumerable<RepairCircle.Data.Models.RepairRequest> filteredRequests = requestsData;
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var likeTerm = $"%{searchTerm.Trim()}%";
-            query = query.Where(r =>
-                EF.Functions.Like(r.Title, likeTerm) ||
-                EF.Functions.Like(r.ItemType, likeTerm) ||
-                EF.Functions.Like(r.Location.Name, likeTerm) ||
-                EF.Functions.Like(r.Location.City, likeTerm) ||
-                EF.Functions.Like(r.SubmittedByUser.FullName ?? string.Empty, likeTerm) ||
-                EF.Functions.Like(r.SubmittedByUser.UserName ?? string.Empty, likeTerm) ||
-                EF.Functions.Like(r.SubmittedByUser.Email ?? string.Empty, likeTerm) ||
-                (r.AssignedVolunteerProfile != null && (
-                    EF.Functions.Like(r.AssignedVolunteerProfile.User.FullName ?? string.Empty, likeTerm) ||
-                    EF.Functions.Like(r.AssignedVolunteerProfile.User.UserName ?? string.Empty, likeTerm) ||
-                    EF.Functions.Like(r.AssignedVolunteerProfile.User.Email ?? string.Empty, likeTerm)
-                )));
+            var term = searchTerm.Trim();
+            filteredRequests = filteredRequests.Where(r =>
+                r.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                r.ItemType.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                r.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                r.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                (r.SubmittedByUser.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.SubmittedByUser.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.SubmittedByUser.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.AssignedVolunteerProfile?.User.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.AssignedVolunteerProfile?.User.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.AssignedVolunteerProfile?.User.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
         }
 
         if (!string.IsNullOrWhiteSpace(status) &&
             Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
         {
-            query = query.Where(r => r.Status == parsedStatus);
+            filteredRequests = filteredRequests.Where(r => r.Status == parsedStatus);
         }
 
         if (locationId.HasValue)
         {
-            query = query.Where(r => r.LocationId == locationId.Value);
+            filteredRequests = filteredRequests.Where(r => r.LocationId == locationId.Value);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems = filteredRequests.Count();
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
         page = Math.Min(page, totalPages);
 
-        var requestRows = await query
+        var requests = filteredRequests
             .OrderByDescending(r => r.RequestedDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(r => new
-            {
-                r.Id,
-                r.Title,
-                r.ItemType,
-                r.Status,
-                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
-                AssignedVolunteer = r.AssignedVolunteerProfile != null
-                    ? (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email)
-                    : null,
-                LocationName = r.Location.Name,
-                City = r.Location.City,
-                r.RequestedDate
-            })
-            .ToListAsync();
-
-        var requests = requestRows
             .Select(r => new RepairRequestListItemViewModel
             {
                 Id = r.Id,
                 Title = r.Title,
                 ItemType = r.ItemType,
                 Status = r.Status.ToString(),
-                SubmittedBy = r.SubmittedBy,
-                AssignedVolunteer = r.AssignedVolunteer,
-                LocationName = $"{r.LocationName} ({r.City})",
+                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                AssignedVolunteer = r.AssignedVolunteerProfile is null
+                    ? null
+                    : (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email),
+                LocationName = $"{r.Location.Name} ({r.Location.City})",
                 RequestedDate = r.RequestedDate
             })
             .ToList();
