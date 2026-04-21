@@ -1,32 +1,36 @@
 @model ToolListItemViewModel
+@{
+    var imageUrl = string.IsNullOrWhiteSpace(Model?.ImageUrl) ? null : Url.Content(Model.ImageUrl);
+    var available = Model?.IsAvailable == true && Model.Quantity > 0;
+}
 <article class="card item-card tool-card">
-    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    @if (!string.IsNullOrWhiteSpace(imageUrl))
     {
-        <img class="item-card-image" src="@Url.Content(Model.ImageUrl)" alt="Image of @Model.Name" />
+        <img class="item-card-image" src="@imageUrl" alt="Image of @(Model?.Name ?? "tool")" />
     }
     <div class="item-card-body">
         <div class="item-card-topline">
-            <span class="badge">@Model.CategoryName</span>
-            <span class="status-badge @(Model.IsAvailable ? "status-success" : "status-muted")">@(Model.IsAvailable ? "Available" : "Unavailable")</span>
+            <span class="badge">@(Model?.CategoryName ?? "Uncategorized")</span>
+            <span class="status-badge @(available ? "status-success" : "status-muted")">@(available ? "Available" : "Unavailable")</span>
         </div>
-        <h3>@Model.Name</h3>
-        <p class="muted clamp-3">@Model.Description</p>
+        <h3>@(Model?.Name ?? "Unnamed tool")</h3>
+        <p class="muted clamp-3">@(Model?.Description ?? "No description provided.")</p>
         <dl class="meta-list compact-meta">
             <div>
                 <dt>Condition</dt>
-                <dd>@Model.Condition</dd>
+                <dd>@(string.IsNullOrWhiteSpace(Model?.Condition) ? "Unknown" : Model.Condition)</dd>
             </div>
             <div>
                 <dt>Location</dt>
-                <dd>@Model.LocationName, @Model.City</dd>
+                <dd>@(Model?.LocationName ?? "Unknown location"), @(Model?.City ?? "Unknown city")</dd>
             </div>
             <div>
                 <dt>Quantity</dt>
-                <dd>@Model.Quantity</dd>
+                <dd>@(Model?.Quantity ?? 0)</dd>
             </div>
         </dl>
     </div>
     <div class="actions">
-        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model.Id">View details</a>
+        <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@Model?.Id">View details</a>
     </div>
 </article>

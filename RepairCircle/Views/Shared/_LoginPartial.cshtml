@@ -2,18 +2,20 @@
 @using RepairCircle.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
-
-<div class="auth-links">
+@{
+    var logoutReturnUrl = Url.Action("Index", "Home", new { area = "" });
+}
+<div class="auth-links auth-links-enhanced">
 @if (SignInManager.IsSignedIn(User))
 {
-    <span class="user-greeting">Hello, @User.Identity?.Name</span>
-    <form class="inline-form" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-        <button type="submit" class="link-button">Logout</button>
+    <span class="user-greeting">👋 Hello, @User.Identity?.Name</span>
+    <form class="inline-form" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@logoutReturnUrl" method="post">
+        <button type="submit" class="link-button auth-chip auth-chip-logout">Logout</button>
     </form>
 }
 else
 {
-    <a asp-area="Identity" asp-page="/Account/Register">Register</a>
-    <a asp-area="Identity" asp-page="/Account/Login">Login</a>
+    <a class="auth-chip auth-chip-register" asp-area="Identity" asp-page="/Account/Register">✨ Register</a>
+    <a class="auth-chip auth-chip-login" asp-area="Identity" asp-page="/Account/Login">🔐 Login</a>
 }
 </div>

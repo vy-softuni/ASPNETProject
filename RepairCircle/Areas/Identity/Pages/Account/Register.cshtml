@@ -4,61 +4,69 @@
     ViewData["Title"] = "Register";
 }
 
-<section class="auth-hero auth-hero-premium">
-    <div class="auth-hero-copy">
-        <span class="eyebrow">✨ Join the community</span>
-        <h1>Create your RepairCircle account</h1>
-        <p>Register to request repairs, borrow tools, save favorites, and volunteer for community sessions.</p>
-        <div class="auth-password-rules card">
-            <h3>Password rules</h3>
-            <ul class="auth-feature-list compact">
-                <li>At least 8 characters</li>
-                <li>At least 1 uppercase letter</li>
-                <li>At least 1 lowercase letter</li>
-                <li>At least 1 digit and 1 special character</li>
-            </ul>
+<section class="auth-stage auth-stage-register">
+    <div class="auth-backdrop"></div>
+    <div class="auth-stage-grid">
+        <aside class="auth-showcase">
+            <div class="auth-showcase-frame">
+                <span class="eyebrow">✨ Join the repair community</span>
+                <h1>Create your RepairCircle account</h1>
+                <p>Register to submit repair requests, borrow tools, join sessions, save favorites, and become part of the volunteer network.</p>
+                <div class="auth-password-rules auth-password-rules-rich">
+                    <h3>Password standards</h3>
+                    <ul class="auth-feature-list auth-feature-list-fancy compact">
+                        <li><span>✔</span> Minimum 8 characters</li>
+                        <li><span>✔</span> At least 1 uppercase and 1 lowercase letter</li>
+                        <li><span>✔</span> At least 1 digit and 1 special character</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <div class="auth-shell auth-shell-premium card elevated-card">
+            <div class="auth-card-header auth-card-header-large">
+                <div class="auth-pill">Create local account</div>
+                <div class="auth-icon-circle">🛠️</div>
+                <h2>Register</h2>
+                <p>All fields are required to create a new local account.</p>
+            </div>
+
+            <form id="registerForm" method="post" class="auth-form auth-form-premium">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+                <input asp-for="Input.ReturnUrl" type="hidden" />
+
+                <div class="form-field auth-field">
+                    <label asp-for="Input.FullName"></label>
+                    <div class="auth-input-wrap fancy-auth-input"><span class="auth-input-icon">👤</span><input asp-for="Input.FullName" placeholder="Your full name" /></div>
+                    <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                </div>
+
+                <div class="form-field auth-field">
+                    <label asp-for="Input.Email"></label>
+                    <div class="auth-input-wrap fancy-auth-input"><span class="auth-input-icon">📧</span><input asp-for="Input.Email" autocomplete="username" placeholder="name@example.com" /></div>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="auth-split-grid">
+                    <div class="form-field auth-field">
+                        <label asp-for="Input.Password"></label>
+                        <div class="auth-input-wrap fancy-auth-input"><span class="auth-input-icon">🔐</span><input asp-for="Input.Password" autocomplete="new-password" placeholder="Create a strong password" /></div>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-field auth-field">
+                        <label asp-for="Input.ConfirmPassword"></label>
+                        <div class="auth-input-wrap fancy-auth-input"><span class="auth-input-icon">✅</span><input asp-for="Input.ConfirmPassword" autocomplete="new-password" placeholder="Repeat your password" /></div>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="actions auth-actions-stacked">
+                    <button id="registerSubmit" type="submit" class="btn btn-primary btn-wide auth-main-button">Create account</button>
+                    <a class="btn btn-secondary btn-wide auth-secondary-button" asp-page="./Login" asp-route-returnUrl="@Model.Input.ReturnUrl">Back to login</a>
+                </div>
+            </form>
         </div>
-    </div>
-
-    <div class="auth-shell card auth-card elevated-card">
-        <div class="auth-card-header">
-            <h2>Create account</h2><div class="auth-icon-circle">🛠️</div>
-            <p>All fields are required. A local account is enough for this project.</p>
-        </div>
-
-        <form id="registerForm" method="post" class="auth-form">
-            <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
-            <input asp-for="Input.ReturnUrl" type="hidden" />
-
-            <div class="form-field">
-                <label asp-for="Input.FullName"></label>
-                <input asp-for="Input.FullName" placeholder="Your full name" />
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
-            </div>
-
-            <div class="form-field">
-                <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" autocomplete="username" placeholder="name@example.com" />
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-
-            <div class="form-field">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" autocomplete="new-password" placeholder="Create a strong password" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-
-            <div class="form-field">
-                <label asp-for="Input.ConfirmPassword"></label>
-                <input asp-for="Input.ConfirmPassword" autocomplete="new-password" placeholder="Repeat your password" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-
-            <div class="actions">
-                <button id="registerSubmit" type="submit" class="btn btn-primary btn-wide">Create account</button>
-                <a class="btn btn-secondary btn-wide" asp-page="./Login" asp-route-returnUrl="@Model.Input.ReturnUrl">Back to login</a>
-            </div>
-        </form>
     </div>
 </section>
 

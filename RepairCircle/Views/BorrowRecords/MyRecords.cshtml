@@ -1,6 +1,23 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
+@using System.Linq
 @model BorrowRecordIndexViewModel
 @{
     ViewData["Title"] = "My Borrow Records";
+    var viewModel = Model ?? new BorrowRecordIndexViewModel();
+    var items = viewModel.Items ?? Array.Empty<BorrowRecordListItemViewModel>();
+    var statuses = viewModel.Statuses ?? Array.Empty<string>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
 }
 
 <section class="page-header card">
@@ -12,27 +29,28 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Tool name, BOR- reference, location..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Tool name, BOR- reference, location..." />
         </div>
         <div class="form-field">
-            <label asp-for="Status">Status</label>
-            <select asp-for="Status">
+            <label for="status">Status</label>
+            <select id="status" name="status">
                 <option value="">All statuses</option>
-                @foreach (var status in Model.Statuses)
+                @foreach (var status in statuses)
                 {
-                    <option value="@status">@status</option>
+                    var isSelected = string.Equals(viewModel.Status, status, StringComparison.OrdinalIgnoreCase);
+                    <option value="@status" selected="@(isSelected ? "selected" : null)">@status</option>
                 }
             </select>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="MyRecords">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action("MyRecords", "BorrowRecords")">Clear</a>
         </div>
     </form>
 </section>
 
-@if (!Model.Items.Any())
+@if (!items.Any())
 {
     <section class="empty-state">
         <h2>No borrowing records yet</h2>
@@ -50,25 +68,65 @@ else
                     <th>Borrowed</th>
                     <th>Due</th>
                     <th>Status</th>
-                    <th>Location</th><th></th>
+                    <th>Location</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-            @foreach (var record in Model.Items)
+            @foreach (var record in items)
             {
                 <tr>
-                    <td>@record.ToolName</td>
-                    <td><code>@record.BorrowReference</code></td>
+                    <td>@(record.ToolName ?? "Unknown tool")</td>
+                    <td><code>@(record.BorrowReference ?? "N/A")</code></td>
                     <td>@record.BorrowDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
                     <td>@record.DueDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
-                    <td><partial name="_BorrowStatusBadgePartial" model="record.Status" /></td>
-                    <td>@record.LocationName</td>
-                    <td><a asp-action="Details" asp-route-id="@record.Id">View code</a></td>
+                    <td>@await Html.PartialAsync("_BorrowStatusBadgePartial", record.Status)</td>
+                    <td>@(record.LocationName ?? "Unknown location")</td>
+                    <td><a href="@Url.Action("Details", "BorrowRecords", new { id = record.Id })">View code</a></td>
                 </tr>
             }
             </tbody>
         </table>
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
 }
 
-<partial name="_PaginationPartial" model="Model.Pagination" />
+}

@@ -21,10 +21,12 @@ public class RepairSessionService : IRepairSessionService
         int page = 1,
         int pageSize = 6)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 6 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 6 : pageSize;
 
-        var sessionsData = await dbContext.RepairSessions
+            var sessionsData = await dbContext.RepairSessions
             .AsNoTracking()
             .Include(rs => rs.Location)
             .Where(rs => rs.EndDate >= DateTime.UtcNow)
@@ -79,19 +81,34 @@ public class RepairSessionService : IRepairSessionService
             })
             .ToListAsync();
 
-        return new RepairSessionIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            LocationId = locationId,
-            Locations = locations,
-            Sessions = sessions,
-            Pagination = new PaginationViewModel
+            return new RepairSessionIndexViewModel
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            }
-        };
+                SearchTerm = searchTerm,
+                LocationId = locationId,
+                Locations = locations,
+                Sessions = sessions,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new RepairSessionIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                LocationId = locationId,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = 1,
+                    PageSize = pageSize < 1 ? 6 : pageSize,
+                    TotalItems = 0
+                }
+            };
+        }
     }
 
     public async Task<RepairSessionDetailsViewModel?> GetByIdAsync(int id)

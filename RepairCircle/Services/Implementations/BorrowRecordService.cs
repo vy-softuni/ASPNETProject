@@ -27,10 +27,12 @@ public class BorrowRecordService : IBorrowRecordService
         int page = 1,
         int pageSize = 10)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 10 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 10 : pageSize;
 
-        var recordsData = await dbContext.BorrowRecords
+            var recordsData = await dbContext.BorrowRecords
             .AsNoTracking()
             .Include(br => br.Tool)
                 .ThenInclude(t => t.Location)
@@ -75,19 +77,35 @@ public class BorrowRecordService : IBorrowRecordService
             })
             .ToList();
 
-        return new BorrowRecordIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            Status = status,
-            Statuses = Enum.GetNames<BorrowStatus>(),
-            Items = records,
-            Pagination = new PaginationViewModel
+            return new BorrowRecordIndexViewModel
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            }
-        };
+                SearchTerm = searchTerm,
+                Status = status,
+                Statuses = Enum.GetNames<BorrowStatus>(),
+                Items = records,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new BorrowRecordIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                Status = status,
+                Statuses = Enum.GetNames<BorrowStatus>(),
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = 1,
+                    PageSize = pageSize < 1 ? 10 : pageSize,
+                    TotalItems = 0
+                }
+            };
+        }
     }
 
     public async Task<BorrowRecordCreateViewModel?> GetCreateModelAsync(int toolId)

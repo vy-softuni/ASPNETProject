@@ -1,6 +1,24 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
+@using System.Linq
 @model VolunteerIndexViewModel
 @{
     ViewData["Title"] = "Volunteers";
+    var viewModel = Model ?? new VolunteerIndexViewModel();
+    var volunteers = viewModel.Volunteers ?? Array.Empty<VolunteerListItemViewModel>();
+    var skills = viewModel.Skills ?? Array.Empty<LookupViewModel>();
+    var levels = viewModel.ExperienceLevels ?? Array.Empty<string>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
 }
 
 <section class="page-header card">
@@ -12,37 +30,39 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Name, bio, electronics, sewing..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Name, bio, electronics, sewing..." />
         </div>
         <div class="form-field">
-            <label asp-for="SkillId">Skill</label>
-            <select asp-for="SkillId">
+            <label for="skillId">Skill</label>
+            <select id="skillId" name="skillId">
                 <option value="">All skills</option>
-                @foreach (var skill in Model.Skills)
+                @foreach (var skill in skills)
                 {
-                    <option value="@skill.Id">@skill.Name</option>
+                    var isSelected = viewModel.SkillId.HasValue && viewModel.SkillId.Value == skill.Id;
+                    <option value="@skill.Id" selected="@(isSelected ? "selected" : null)">@skill.Name</option>
                 }
             </select>
         </div>
         <div class="form-field">
-            <label asp-for="ExperienceLevel">Experience</label>
-            <select asp-for="ExperienceLevel">
+            <label for="experienceLevel">Experience</label>
+            <select id="experienceLevel" name="experienceLevel">
                 <option value="">All levels</option>
-                @foreach (var level in Model.ExperienceLevels)
+                @foreach (var level in levels)
                 {
-                    <option value="@level">@level</option>
+                    var isSelected = string.Equals(viewModel.ExperienceLevel, level, StringComparison.OrdinalIgnoreCase);
+                    <option value="@level" selected="@(isSelected ? "selected" : null)">@level</option>
                 }
             </select>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "Volunteers")">Clear</a>
         </div>
     </form>
 </section>
 
-@if (!Model.Volunteers.Any())
+@if (!volunteers.Any())
 {
     <section class="empty-state">
         <h2>No volunteers listed yet</h2>
@@ -52,19 +72,58 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var volunteer in Model.Volunteers)
+        @foreach (var volunteer in volunteers)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
                     <span class="badge">Volunteer</span>
-                    <span class="status-badge status-info">@volunteer.ExperienceLevel</span>
+                    <span class="status-badge status-info">@(volunteer.ExperienceLevel ?? "Unknown")</span>
                 </div>
-                <h2>@volunteer.FullName</h2>
+                <h2>@(volunteer.FullName ?? "Unnamed volunteer")</h2>
                 <p class="clamp-3">@(!string.IsNullOrWhiteSpace(volunteer.Bio) ? volunteer.Bio : "No biography provided.")</p>
-                <p><strong>Skills:</strong> @string.Join(", ", volunteer.Skills)</p>
+                <p><strong>Skills:</strong> @(volunteer.Skills is { Count: > 0 } ? string.Join(", ", volunteer.Skills) : "None listed")</p>
             </article>
         }
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
 }
 
-<partial name="_PaginationPartial" model="Model.Pagination" />
+}

@@ -1,8 +1,22 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
 @using System.Linq
 @model FavoriteIndexViewModel
 @{
     ViewData["Title"] = "My Favorite Tools";
-    var items = Model?.Items ?? Array.Empty<FavoriteListItemViewModel>();
+    var viewModel = Model ?? new FavoriteIndexViewModel();
+    var items = viewModel.Items ?? Array.Empty<FavoriteListItemViewModel>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
 }
 
 <section class="page-header card">
@@ -14,17 +28,17 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Drill, sewing, Sofia..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Drill, sewing, Sofia..." />
         </div>
         <div class="form-field checkbox-field">
-            <label class="checkbox-label">
-                <input asp-for="OnlyAvailable" type="checkbox" value="true" /> Show only currently available tools
+            <label class="checkbox-label" for="onlyAvailable">
+                <input id="onlyAvailable" name="onlyAvailable" type="checkbox" value="true" @(viewModel.OnlyAvailable == true ? "checked" : null) /> Show only currently available tools
             </label>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "Favorites")">Clear</a>
         </div>
     </form>
 </section>
@@ -41,15 +55,20 @@ else
     <section class="grid grid-2">
         @foreach (var tool in items)
         {
+            var imageUrl = string.IsNullOrWhiteSpace(tool.ImageUrl) ? null : Url.Content(tool.ImageUrl);
             <article class="card item-card">
+                @if (!string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    <img class="item-card-image" src="@imageUrl" alt="Image of @tool.ToolName" />
+                }
                 <div class="item-card-topline">
-                    <span class="badge">@tool.CategoryName</span>
+                    <span class="badge">@(tool.CategoryName ?? "Uncategorized")</span>
                     <span class="status-badge @(tool.IsAvailable ? "status-success" : "status-muted")">@(tool.IsAvailable ? "Available" : "Unavailable")</span>
                 </div>
-                <h2>@tool.ToolName</h2>
-                <p><strong>Location:</strong> @tool.LocationName</p>
+                <h2>@(tool.ToolName ?? "Unnamed tool")</h2>
+                <p><strong>Location:</strong> @(tool.LocationName ?? "Unknown location")</p>
                 <div class="actions">
-                    <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.ToolId">View details</a>
+                    <a class="btn btn-secondary" href="@Url.Action("Details", "Tools", new { id = tool.ToolId })">View details</a>
                     <form asp-action="Remove" method="post" class="inline-form">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="toolId" value="@tool.ToolId" />
@@ -59,4 +78,45 @@ else
             </article>
         }
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
+}
+
 }

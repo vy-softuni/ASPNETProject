@@ -1,6 +1,23 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
+@using System.Linq
 @model RepairSessionIndexViewModel
 @{
     ViewData["Title"] = "Repair Sessions";
+    var viewModel = Model ?? new RepairSessionIndexViewModel();
+    var sessions = viewModel.Sessions ?? Array.Empty<RepairSessionListItemViewModel>();
+    var locations = viewModel.Locations ?? Array.Empty<LookupViewModel>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
 }
 
 <section class="page-header card">
@@ -12,27 +29,28 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Electronics, sewing, Sofia..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Electronics, sewing, Sofia..." />
         </div>
         <div class="form-field">
-            <label asp-for="LocationId">Location</label>
-            <select asp-for="LocationId">
+            <label for="locationId">Location</label>
+            <select id="locationId" name="locationId">
                 <option value="">All locations</option>
-                @foreach (var location in Model.Locations)
+                @foreach (var location in locations)
                 {
-                    <option value="@location.Id">@location.Name</option>
+                    var isSelected = viewModel.LocationId.HasValue && viewModel.LocationId.Value == location.Id;
+                    <option value="@location.Id" selected="@(isSelected ? "selected" : null)">@location.Name</option>
                 }
             </select>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "RepairSessions")">Clear</a>
         </div>
     </form>
 </section>
 
-@if (!Model.Sessions.Any())
+@if (!sessions.Any())
 {
     <section class="empty-state">
         <h2>No sessions planned yet</h2>
@@ -42,15 +60,15 @@
 else
 {
     <section class="grid grid-2">
-        @foreach (var session in Model.Sessions)
+        @foreach (var session in sessions)
         {
             <article class="card item-card">
                 <div class="item-card-topline">
-                    <span class="badge">@session.LocationName</span>
+                    <span class="badge">@(session.LocationName ?? "Unknown location")</span>
                     <span class="status-badge status-info">@session.AvailableSlots / @session.MaxParticipants slots</span>
                 </div>
-                <h2>@session.Title</h2>
-                <p class="clamp-3">@session.Description</p>
+                <h2>@(session.Title ?? "Untitled session")</h2>
+                <p class="clamp-3">@(session.Description ?? "No description provided.")</p>
                 <dl class="meta-list compact-meta">
                     <div>
                         <dt>Starts</dt>
@@ -62,15 +80,54 @@ else
                     </div>
                     <div>
                         <dt>City</dt>
-                        <dd>@session.City</dd>
+                        <dd>@(session.City ?? "Unknown")</dd>
                     </div>
                 </dl>
                 <div class="actions">
-                    <a class="btn btn-secondary" asp-action="Details" asp-route-id="@session.Id">View details</a>
+                    <a class="btn btn-secondary" href="@Url.Action("Details", "RepairSessions", new { id = session.Id })">View details</a>
                 </div>
             </article>
         }
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
 }
 
-<partial name="_PaginationPartial" model="Model.Pagination" />
+}

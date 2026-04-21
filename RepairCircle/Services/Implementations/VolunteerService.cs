@@ -24,10 +24,12 @@ public class VolunteerService : IVolunteerService
         int page = 1,
         int pageSize = 6)
     {
-        page = page < 1 ? 1 : page;
-        pageSize = pageSize < 1 ? 6 : pageSize;
+        try
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 6 : pageSize;
 
-        var profiles = await dbContext.VolunteerProfiles
+            var profiles = await dbContext.VolunteerProfiles
             .AsNoTracking()
             .Include(v => v.User)
             .Include(v => v.Skills)
@@ -86,21 +88,38 @@ public class VolunteerService : IVolunteerService
             })
             .ToListAsync();
 
-        return new VolunteerIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            SkillId = skillId,
-            ExperienceLevel = experienceLevel,
-            Skills = skills,
-            ExperienceLevels = Enum.GetNames<ExperienceLevel>(),
-            Volunteers = volunteers,
-            Pagination = new PaginationViewModel
+            return new VolunteerIndexViewModel
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            }
-        };
+                SearchTerm = searchTerm,
+                SkillId = skillId,
+                ExperienceLevel = experienceLevel,
+                Skills = skills,
+                ExperienceLevels = Enum.GetNames<ExperienceLevel>(),
+                Volunteers = volunteers,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new VolunteerIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                SkillId = skillId,
+                ExperienceLevel = experienceLevel,
+                ExperienceLevels = Enum.GetNames<ExperienceLevel>(),
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = 1,
+                    PageSize = pageSize < 1 ? 6 : pageSize,
+                    TotalItems = 0
+                }
+            };
+        }
     }
 
     public async Task<VolunteerBecomeViewModel> GetBecomeViewModelAsync()

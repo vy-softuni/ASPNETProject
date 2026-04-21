@@ -1,10 +1,25 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
 @using System.Linq
 @model RepairRequestIndexViewModel
 @{
     ViewData["Title"] = ViewData["Title"] as string ?? "Repair Requests";
-    var requests = Model?.Requests ?? Array.Empty<RepairRequestListItemViewModel>();
-    var locations = Model?.Locations ?? Array.Empty<LookupViewModel>();
-    var statuses = Model?.Statuses ?? Array.Empty<string>();
+    var viewModel = Model ?? new RepairRequestIndexViewModel();
+    var requests = viewModel.Requests ?? Array.Empty<RepairRequestListItemViewModel>();
+    var locations = viewModel.Locations ?? Array.Empty<LookupViewModel>();
+    var statuses = viewModel.Statuses ?? Array.Empty<string>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
+    var clearAction = ViewData["Title"]?.ToString() == "My Repair Requests" ? "MyRequests" : "Index";
 }
 
 <section class="page-header card">
@@ -16,32 +31,34 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Lamp, bicycle chain, toaster, Sofia..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Lamp, bicycle chain, toaster, Sofia..." />
         </div>
         <div class="form-field">
-            <label asp-for="Status">Status</label>
-            <select asp-for="Status">
+            <label for="status">Status</label>
+            <select id="status" name="status">
                 <option value="">All statuses</option>
-                @foreach (var status in statuses)
+                @foreach (var option in statuses)
                 {
-                    <option value="@status">@status</option>
+                    var isSelected = string.Equals(viewModel.Status, option, StringComparison.OrdinalIgnoreCase);
+                    <option value="@option" selected="@(isSelected ? "selected" : null)">@option</option>
                 }
             </select>
         </div>
         <div class="form-field">
-            <label asp-for="LocationId">Location</label>
-            <select asp-for="LocationId">
+            <label for="locationId">Location</label>
+            <select id="locationId" name="locationId">
                 <option value="">All locations</option>
                 @foreach (var location in locations)
                 {
-                    <option value="@location.Id">@location.Name</option>
+                    var isSelected = viewModel.LocationId.HasValue && viewModel.LocationId.Value == location.Id;
+                    <option value="@location.Id" selected="@(isSelected ? "selected" : null)">@location.Name</option>
                 }
             </select>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="@(ViewData["Title"]?.ToString() == "My Repair Requests" ? "MyRequests" : "Index")">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action(clearAction, "RepairRequests")">Clear</a>
         </div>
     </form>
 </section>
@@ -60,18 +77,59 @@ else
         {
             <article class="card item-card">
                 <div class="item-card-topline">
-                    <span class="badge">@request.ItemType</span>
-                    <span class="status-badge">@request.Status</span>
+                    <span class="badge">@(request.ItemType ?? "General")</span>
+                    <span class="status-badge">@(request.Status ?? "Unknown")</span>
                 </div>
-                <h3>@request.Title</h3>
-                <p><strong>Submitted by:</strong> @request.SubmittedBy</p>
-                <p><strong>Volunteer:</strong> @(request.AssignedVolunteer ?? "Awaiting assignment")</p>
-                <p><strong>Location:</strong> @request.LocationName</p>
+                <h3>@(request.Title ?? "Untitled repair request")</h3>
+                <p><strong>Submitted by:</strong> @(request.SubmittedBy ?? "Unknown user")</p>
+                <p><strong>Volunteer:</strong> @(string.IsNullOrWhiteSpace(request.AssignedVolunteer) ? "Awaiting assignment" : request.AssignedVolunteer)</p>
+                <p><strong>Location:</strong> @(request.LocationName ?? "Unknown location")</p>
                 <p><strong>Requested on:</strong> @request.RequestedDate.ToLocalTime().ToString("dd.MM.yyyy")</p>
                 <div class="actions">
-                    <a class="btn btn-secondary" asp-controller="RepairRequests" asp-action="Details" asp-route-id="@request.Id">Open request</a>
+                    <a class="btn btn-secondary" href="@Url.Action("Details", "RepairRequests", new { id = request.Id })">Open request</a>
                 </div>
             </article>
         }
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
+}
+
 }

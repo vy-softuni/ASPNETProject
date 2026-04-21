@@ -210,88 +210,105 @@ public class RepairRequestService : IRepairRequestService
             pageSize = pageSize < 1 ? 6 : pageSize;
 
             var requestsData = await query
-            .Include(r => r.SubmittedByUser)
-            .Include(r => r.AssignedVolunteerProfile)
-                .ThenInclude(v => v!.User)
-            .Include(r => r.Location)
-            .ToListAsync();
+                .Include(r => r.SubmittedByUser)
+                .Include(r => r.AssignedVolunteerProfile)
+                    .ThenInclude(v => v!.User)
+                .Include(r => r.Location)
+                .ToListAsync();
 
-        IEnumerable<RepairCircle.Data.Models.RepairRequest> filteredRequests = requestsData;
+            IEnumerable<RepairCircle.Data.Models.RepairRequest> filteredRequests = requestsData;
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var term = searchTerm.Trim();
-            filteredRequests = filteredRequests.Where(r =>
-                r.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                r.ItemType.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                r.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                r.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                (r.SubmittedByUser.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.SubmittedByUser.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.SubmittedByUser.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.AssignedVolunteerProfile?.User.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.AssignedVolunteerProfile?.User.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.AssignedVolunteerProfile?.User.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
-        }
-
-        if (!string.IsNullOrWhiteSpace(status) &&
-            Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
-        {
-            filteredRequests = filteredRequests.Where(r => r.Status == parsedStatus);
-        }
-
-        if (locationId.HasValue)
-        {
-            filteredRequests = filteredRequests.Where(r => r.LocationId == locationId.Value);
-        }
-
-        var totalItems = filteredRequests.Count();
-        var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
-        page = Math.Min(page, totalPages);
-
-        var requests = filteredRequests
-            .OrderByDescending(r => r.RequestedDate)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(r => new RepairRequestListItemViewModel
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                Id = r.Id,
-                Title = r.Title,
-                ItemType = r.ItemType,
-                Status = r.Status.ToString(),
-                SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
-                AssignedVolunteer = r.AssignedVolunteerProfile is null
-                    ? null
-                    : (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email),
-                LocationName = $"{r.Location.Name} ({r.Location.City})",
-                RequestedDate = r.RequestedDate
-            })
-            .ToList();
-
-        var locations = await dbContext.Locations
-            .AsNoTracking()
-            .OrderBy(l => l.Name)
-            .Select(l => new LookupViewModel
-            {
-                Id = l.Id,
-                Name = $"{l.Name} ({l.City})"
-            })
-            .ToListAsync();
-
-        return new RepairRequestIndexViewModel
-        {
-            SearchTerm = searchTerm,
-            Status = status,
-            LocationId = locationId,
-            Locations = locations,
-            Statuses = Enum.GetNames<RepairRequestStatus>(),
-            Requests = requests,
-            Pagination = new PaginationViewModel
-            {
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
+                var term = searchTerm.Trim();
+                filteredRequests = filteredRequests.Where(r =>
+                    r.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    r.ItemType.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    r.Location.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    r.Location.City.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    (r.SubmittedByUser.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (r.SubmittedByUser.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (r.SubmittedByUser.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (r.AssignedVolunteerProfile?.User.FullName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (r.AssignedVolunteerProfile?.User.UserName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (r.AssignedVolunteerProfile?.User.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
             }
-        };
+
+            if (!string.IsNullOrWhiteSpace(status) &&
+                Enum.TryParse<RepairRequestStatus>(status, out var parsedStatus))
+            {
+                filteredRequests = filteredRequests.Where(r => r.Status == parsedStatus);
+            }
+
+            if (locationId.HasValue)
+            {
+                filteredRequests = filteredRequests.Where(r => r.LocationId == locationId.Value);
+            }
+
+            var totalItems = filteredRequests.Count();
+            var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Min(page, totalPages);
+
+            var requests = filteredRequests
+                .OrderByDescending(r => r.RequestedDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new RepairRequestListItemViewModel
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    ItemType = r.ItemType,
+                    Status = r.Status.ToString(),
+                    SubmittedBy = r.SubmittedByUser.FullName ?? r.SubmittedByUser.UserName ?? r.SubmittedByUser.Email ?? "Unknown user",
+                    AssignedVolunteer = r.AssignedVolunteerProfile is null
+                        ? null
+                        : (r.AssignedVolunteerProfile.User.FullName ?? r.AssignedVolunteerProfile.User.UserName ?? r.AssignedVolunteerProfile.User.Email),
+                    LocationName = $"{r.Location.Name} ({r.Location.City})",
+                    RequestedDate = r.RequestedDate
+                })
+                .ToList();
+
+            var locations = await dbContext.Locations
+                .AsNoTracking()
+                .OrderBy(l => l.Name)
+                .Select(l => new LookupViewModel
+                {
+                    Id = l.Id,
+                    Name = $"{l.Name} ({l.City})"
+                })
+                .ToListAsync();
+
+            return new RepairRequestIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                Status = status,
+                LocationId = locationId,
+                Locations = locations,
+                Statuses = Enum.GetNames<RepairRequestStatus>(),
+                Requests = requests,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch
+        {
+            return new RepairRequestIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                Status = status,
+                LocationId = locationId,
+                Statuses = Enum.GetNames<RepairRequestStatus>(),
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = 1,
+                    PageSize = pageSize < 1 ? 6 : pageSize,
+                    TotalItems = 0
+                }
+            };
+        }
     }
 }

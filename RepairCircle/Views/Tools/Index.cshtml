@@ -1,11 +1,25 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
 @using System.Linq
 @model ToolIndexViewModel
 @{
     ViewData["Title"] = "Tools";
-    var items = Model?.Tools ?? Array.Empty<ToolListItemViewModel>();
-    var categories = Model?.Categories ?? Array.Empty<LookupViewModel>();
-    var locations = Model?.Locations ?? Array.Empty<LookupViewModel>();
-    var conditions = Model?.Conditions ?? Array.Empty<string>();
+    var viewModel = Model ?? new ToolIndexViewModel();
+    var items = viewModel.Tools ?? Array.Empty<ToolListItemViewModel>();
+    var categories = viewModel.Categories ?? Array.Empty<LookupViewModel>();
+    var locations = viewModel.Locations ?? Array.Empty<LookupViewModel>();
+    var conditions = viewModel.Conditions ?? Array.Empty<string>();
+    var pager = viewModel.Pagination ?? new PaginationViewModel();
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var query = Context.Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+        query["page"] = pageNumber.ToString(CultureInfo.InvariantCulture);
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+
+    var startPage = Math.Max(1, pager.CurrentPage - 2);
+    var endPage = Math.Min(pager.TotalPages, pager.CurrentPage + 2);
 }
 
 <section class="page-header card">
@@ -17,47 +31,50 @@
 <section class="card filter-card">
     <form method="get" class="form-grid filter-grid">
         <div class="form-field">
-            <label asp-for="SearchTerm">Search</label>
-            <input asp-for="SearchTerm" placeholder="Drill, sewing machine, bike stand..." />
+            <label for="searchTerm">Search</label>
+            <input id="searchTerm" name="searchTerm" value="@viewModel.SearchTerm" placeholder="Drill, sewing machine, bike stand..." />
         </div>
         <div class="form-field">
-            <label asp-for="CategoryId">Category</label>
-            <select asp-for="CategoryId">
+            <label for="categoryId">Category</label>
+            <select id="categoryId" name="categoryId">
                 <option value="">All categories</option>
                 @foreach (var category in categories)
                 {
-                    <option value="@category.Id">@category.Name</option>
+                    var isSelected = viewModel.CategoryId.HasValue && viewModel.CategoryId.Value == category.Id;
+                    <option value="@category.Id" selected="@(isSelected ? "selected" : null)">@category.Name</option>
                 }
             </select>
         </div>
         <div class="form-field">
-            <label asp-for="LocationId">Location</label>
-            <select asp-for="LocationId">
+            <label for="locationId">Location</label>
+            <select id="locationId" name="locationId">
                 <option value="">All locations</option>
                 @foreach (var location in locations)
                 {
-                    <option value="@location.Id">@location.Name</option>
+                    var isSelected = viewModel.LocationId.HasValue && viewModel.LocationId.Value == location.Id;
+                    <option value="@location.Id" selected="@(isSelected ? "selected" : null)">@location.Name</option>
                 }
             </select>
         </div>
         <div class="form-field">
-            <label asp-for="Condition">Condition</label>
-            <select asp-for="Condition">
+            <label for="condition">Condition</label>
+            <select id="condition" name="condition">
                 <option value="">All conditions</option>
-                @foreach (var condition in conditions)
+                @foreach (var option in conditions)
                 {
-                    <option value="@condition">@condition</option>
+                    var isSelected = string.Equals(viewModel.Condition, option, StringComparison.OrdinalIgnoreCase);
+                    <option value="@option" selected="@(isSelected ? "selected" : null)">@option</option>
                 }
             </select>
         </div>
         <div class="form-field checkbox-field">
-            <label class="checkbox-label">
-                <input asp-for="OnlyAvailable" type="checkbox" value="true" /> Show only available tools
+            <label class="checkbox-label" for="onlyAvailable">
+                <input id="onlyAvailable" name="onlyAvailable" type="checkbox" value="true" @(viewModel.OnlyAvailable == true ? "checked" : null) /> Show only available tools
             </label>
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Apply filters</button>
-            <a class="btn btn-secondary" asp-action="Index">Clear</a>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "Tools")">Clear</a>
         </div>
     </form>
 </section>
@@ -74,26 +91,69 @@ else
     <section class="grid grid-3">
         @foreach (var tool in items)
         {
+            var imageUrl = string.IsNullOrWhiteSpace(tool.ImageUrl) ? null : Url.Content(tool.ImageUrl);
+            var available = tool.IsAvailable && tool.Quantity > 0;
             <article class="card item-card tool-card">
-                @if (!string.IsNullOrWhiteSpace(tool.ImageUrl))
+                @if (!string.IsNullOrWhiteSpace(imageUrl))
                 {
-                    <img class="item-card-image" src="@Url.Content(tool.ImageUrl)" alt="Image of @tool.Name" />
+                    <img class="item-card-image" src="@imageUrl" alt="Image of @tool.Name" />
                 }
                 <div class="item-card-body">
                     <div class="item-card-topline">
-                        <span class="badge">@tool.CategoryName</span>
-                        <span class="status-badge @(tool.IsAvailable ? "status-success" : "status-muted")">@(tool.IsAvailable ? "Available" : "Unavailable")</span>
+                        <span class="badge">@(tool.CategoryName ?? "Uncategorized")</span>
+                        <span class="status-badge @(available ? "status-success" : "status-muted")">@(available ? "Available" : "Unavailable")</span>
                     </div>
-                    <h3>@tool.Name</h3>
-                    <p class="muted">@tool.Description</p>
-                    <p><strong>Condition:</strong> @tool.Condition</p>
-                    <p><strong>Location:</strong> @tool.LocationName, @tool.City</p>
+                    <h3>@(tool.Name ?? "Unnamed tool")</h3>
+                    <p class="muted">@(tool.Description ?? "No description provided.")</p>
+                    <p><strong>Condition:</strong> @(string.IsNullOrWhiteSpace(tool.Condition) ? "Unknown" : tool.Condition)</p>
+                    <p><strong>Location:</strong> @(tool.LocationName ?? "Unknown location"), @(tool.City ?? "Unknown city")</p>
                     <p><strong>Quantity:</strong> @tool.Quantity</p>
                 </div>
                 <div class="actions">
-                    <a class="btn btn-secondary" asp-controller="Tools" asp-action="Details" asp-route-id="@tool.Id">View details</a>
+                    <a class="btn btn-secondary" href="@Url.Action("Details", "Tools", new { id = tool.Id })">View details</a>
                 </div>
             </article>
         }
     </section>
+
+@if (pager.TotalPages > 1)
+{
+    <nav class="pagination-panel card" aria-label="Pagination navigation">
+        <div class="pagination-summary">
+            Showing <strong>@pager.StartItem</strong>–<strong>@pager.EndItem</strong> of <strong>@pager.TotalItems</strong> results
+        </div>
+        <div class="pagination-links">
+            @if (pager.HasPreviousPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage - 1)">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Previous</span>
+            }
+
+            @for (var i = startPage; i <= endPage; i++)
+            {
+                if (i == pager.CurrentPage)
+                {
+                    <span class="pagination-link active">@i</span>
+                }
+                else
+                {
+                    <a class="pagination-link" href="@BuildPageUrl(i)">@i</a>
+                }
+            }
+
+            @if (pager.HasNextPage)
+            {
+                <a class="btn btn-secondary" href="@BuildPageUrl(pager.CurrentPage + 1)">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-secondary disabled" aria-disabled="true">Next</span>
+            }
+        </div>
+    </nav>
+}
+
 }

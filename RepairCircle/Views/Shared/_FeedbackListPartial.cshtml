@@ -1,5 +1,9 @@
-@model IReadOnlyCollection<RepairRequestFeedbackViewModel>
-@if (!Model.Any())
+@using System.Linq
+@model IReadOnlyCollection<RepairRequestFeedbackViewModel>?
+@{
+    var items = Model ?? Array.Empty<RepairRequestFeedbackViewModel>();
+}
+@if (!items.Any())
 {
     <div class="empty-state compact-empty">
         <h3>No feedback yet</h3>
@@ -9,14 +13,14 @@
 else
 {
     <div class="stack-list">
-        @foreach (var feedback in Model.OrderByDescending(f => f.CreatedOn))
+        @foreach (var feedback in items.OrderByDescending(f => f.CreatedOn))
         {
             <article class="card feedback-card">
                 <div class="item-card-topline">
-                    <strong>@feedback.UserName</strong>
+                    <strong>@(feedback.UserName ?? "Anonymous user")</strong>
                     <span class="status-badge status-info">@feedback.Rating / 5</span>
                 </div>
-                <p>@feedback.Comment</p>
+                <p>@(feedback.Comment ?? "No written comment.")</p>
                 <p class="muted small-text">@feedback.CreatedOn.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
             </article>
         }

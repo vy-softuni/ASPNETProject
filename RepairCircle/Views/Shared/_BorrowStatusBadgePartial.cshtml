@@ -1,6 +1,7 @@
-@model string
+@model string?
 @{
-    var cssClass = Model.ToLowerInvariant() switch
+    var statusText = string.IsNullOrWhiteSpace(Model) ? "Unknown" : Model;
+    var cssClass = statusText.ToLowerInvariant() switch
     {
         "approved" => "status-success",
         "returned" => "status-info",
@@ -9,4 +10,4 @@
         _ => "status-warning"
     };
 }
-<span class="status-badge @cssClass">@Model</span>
+<span class="status-badge @cssClass">@statusText</span>
