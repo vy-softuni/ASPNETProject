@@ -646,11 +646,13 @@ Example screenshot section format:
 ## Screenshots
 
 ### Home Page
-[Home Page](https://github.com/vy-softuni/ASPNETProject/blob/master/RepairCircle/docs/screenshots/home-page.PNG)
+|:------------- |
+[Home Page](https://github.com/vy-softuni/ASPNETProject/blob/main/RepairCircle/docs/screenshots/home-page.png)
 
 
 ### Admin Dashboard
-[Admin Dashboard](https://github.com/vy-softuni/ASPNETProject/blob/master/RepairCircle/docs/screenshots/admin-dashboard.PNG)
+|:------------- |
+[Admin Dashboard](https://github.com/vy-softuni/ASPNETProject/blob/main/RepairCircle/docs/screenshots/admin-dashboard.png)
 ```
 
 ---
